@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/api/main.py",
+      "src": "api/main.py",
       "use": "@vercel/python",
       "config": { "maxLambdaSize": "15mb" }
     }
@@ -10,7 +10,7 @@
   "routes": [
     {
       "src": "/api/py/(.*)",
-      "dest": "backend/api/main.py"
+      "dest": "api/main.py"
     }
   ]
 }
