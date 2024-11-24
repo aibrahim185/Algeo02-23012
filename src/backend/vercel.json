@@ -5,20 +5,12 @@
       "src": "backend/api/main.py",
       "use": "@vercel/python",
       "config": { "maxLambdaSize": "15mb" }
-    },
-    {
-      "src": "frontend/next.config.js",
-      "use": "@vercel/next"
     }
   ],
   "routes": [
     {
       "src": "/api/py/(.*)",
       "dest": "backend/api/main.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/$1"
     }
   ]
 }
