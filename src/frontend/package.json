@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev:frontend": "next dev --turbopack",
-    "dev:backend": "cd ../backend && uvicorn api.main:app --reload",
+    "dev:backend": "cd ../backend && python3 api.main:app --reload",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "build": "next build",
     "start": "next start",
