@@ -1,3 +1,5 @@
+const path = require("path");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   rewrites: async () => {
@@ -24,6 +26,10 @@ const nextConfig = {
             : "/api/py/openapi.json",
       },
     ];
+  },
+  webpack: (config) => {
+    config.resolve.alias["@frontend"] = path.join(__dirname, "src/frontend");
+    return config;
   },
 };
 
