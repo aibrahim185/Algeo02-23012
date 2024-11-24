@@ -2,6 +2,10 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-@app.get("/api/hello")
-def read_root():
+@app.get("/")
+def home_root():
     return {"Hello": "World"}
+
+@app.get("/sorong")
+def home_root():
+    return {"ambalabu": "jangan ke sini~"}
