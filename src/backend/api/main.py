@@ -21,7 +21,7 @@ def sorong():
     
 @app.get("/music")
 def sorong():
-    return {"text": "ini api messege"}
+    return {"text": "ini api music"}
 
 @app.get("/album")
 def sorong():

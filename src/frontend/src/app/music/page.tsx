@@ -20,7 +20,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="grid place-content-center min-h-screen w-full">
+    <div className="grid place-content-center w-full">
       <Image src={"/ambalabu-text.png"} alt={"bg"} width={1000} height={1000} />
       <h1>{message ? message : "Loading..."}</h1>
       {process.env.NEXT_PUBLIC_API_URL}

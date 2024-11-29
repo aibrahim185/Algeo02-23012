@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Navbar } from "./_components/navbar";
 
 export const metadata: Metadata = {
   title: "Ambalabu",
@@ -13,7 +14,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased bg-[url('/bg2.png')]  backdrop-blur-sm`}>
+      <body
+        className={`antialiased bg-[url('/bg2.png')] min-h-screen backdrop-blur-sm`}
+      >
+        <div className="flex justify-center w-full top-6 sticky">
+          <Navbar />
+        </div>
         {children}
       </body>
     </html>
