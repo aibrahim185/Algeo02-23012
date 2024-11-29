@@ -5,31 +5,19 @@ const nextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination:
-          process.env.NODE_ENV === "development"
-            ? `${process.env.NEXT_PUBLIC_API_URL}/:path*`
-            : "/api/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
       },
       {
         source: "/docs",
-        destination:
-          process.env.NODE_ENV === "development"
-            ? `${process.env.NEXT_PUBLIC_API_URL}/docs`
-            : "/api/docs",
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/docs`,
       },
       {
         source: "/redoc",
-        destination:
-          process.env.NODE_ENV === "development"
-            ? `${process.env.NEXT_PUBLIC_API_URL}/redoc`
-            : "/api/docs",
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/redoc`,
       },
       {
         source: "/openapi.json",
-        destination:
-          process.env.NODE_ENV === "development"
-            ? `${process.env.NEXT_PUBLIC_API_URL}/openapi.json`
-            : "/api/openapi.json",
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/openapi.json`,
       },
     ];
   },
