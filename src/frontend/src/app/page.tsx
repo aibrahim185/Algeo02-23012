@@ -8,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`, {
+      const res = await fetch("api", {
         method: "GET",
       });
       console.log(res);

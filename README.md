@@ -40,7 +40,7 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-The FastApi server will be running on [http://127.0.0.1:8000](http://127.0.0.1:8000)
+The FastApi server will be running on [http://localhost:8000](http://localhost:8000)
 
-API docs (Swagger) [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-API docs (ReDoc) [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
+API docs (Swagger) [http://localhost:3000/docs](http://localhost:3000/docs)
+API docs (ReDoc) [http://localhost:3000/redoc](http://localhost:3000/redoc)
