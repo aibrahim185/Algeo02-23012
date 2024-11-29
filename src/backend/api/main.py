@@ -12,9 +12,17 @@ app.add_middleware(
 )
 
 @app.get("/")
-def home_root():
+def hello_world():
     return {"Hello": "World"}
 
 @app.get("/sorong")
-def home_root():
+def sorong():
     return {"ambalabu": "jangan ke sini~"}
+    
+@app.get("/music")
+def sorong():
+    return {"text": "ini api messege"}
+
+@app.get("/album")
+def sorong():
+    return {"text": "ini api album"}
