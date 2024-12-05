@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Navbar } from "./_components/navbar";
+import { Toaster } from "./_components/ui/sonner";
+import Lightning from "./_components/lightning";
 
 export const metadata: Metadata = {
   title: "Ambalabu",
@@ -15,12 +16,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`antialiased bg-[url('/bg2.png')] min-h-screen backdrop-blur-sm`}
+        className={`antialiased bg-[url('/bg2.png')] min-h-screen backdrop-blur-sm flex flex-row`}
       >
-        <div className="flex justify-center w-full top-6 sticky">
-          <Navbar />
-        </div>
         {children}
+
+        <Lightning />
+        <Toaster />
       </body>
     </html>
   );

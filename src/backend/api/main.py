@@ -1,6 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List
+from faker import Faker
 
+fake = Faker()
 app = FastAPI()
 
 app.add_middleware(
@@ -10,6 +14,35 @@ app.add_middleware(
     allow_methods=["*"], 
     allow_headers=["*"], 
 )
+
+DATA = [
+    {
+        "id": i,
+        "image": "/favicon.ico",
+        "title": fake.sentence(nb_words=5),  # Title berupa kalimat acak
+    }
+    for i in range(1, 102)  
+]
+
+class PaginatedResponse(BaseModel):
+    items: List[dict]
+    total: int
+    page: int
+    size: int
+
+
+@app.get("/faker", response_model=PaginatedResponse)
+def get_items(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
+    start = (page - 1) * size
+    end = start + size
+    items = DATA[start:end]
+    total = len(DATA)
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+    }
 
 @app.get("/")
 def hello_world():
