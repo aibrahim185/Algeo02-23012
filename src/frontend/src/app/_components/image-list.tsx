@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -28,7 +29,6 @@ export default function ImageList() {
       const res = await fetch(`api/faker?page=${page}&size=${size}`, {
         method: "GET",
       });
-      console.log(res);
       const data = await res.json();
       setItems(data.items);
       setTotal(data.total);
@@ -47,10 +47,37 @@ export default function ImageList() {
     if (page > 1) setPage(page - 1);
   };
 
+  const handleJumpToPage = (jumpPage: number) => {
+    setPage(jumpPage);
+  };
+
+  const renderPageNumbers = () => {
+    const visiblePages = 3;
+    const pages: number[] = [];
+
+    for (
+      let i = Math.max(1, page - visiblePages);
+      i <= Math.min(totalPages, page + visiblePages);
+      i++
+    ) {
+      pages.push(i);
+    }
+
+    return pages.map((p) => (
+      <PaginationItem key={p}>
+        <PaginationLink
+          href="#"
+          onClick={() => handleJumpToPage(p)}
+          className={p === page ? "bg-gray-900 text-white" : ""}
+        >
+          {p}
+        </PaginationLink>
+      </PaginationItem>
+    ));
+  };
+
   return (
-    <div
-      className={`flex flex-wrap gap-6 justify-items-center overflow-hidden max-w-7xl`}
-    >
+    <div className="flex flex-wrap gap-6 justify-items-center overflow-hidden max-w-7xl">
       {items.map((d) => (
         <div
           key={d.id}
@@ -70,25 +97,41 @@ export default function ImageList() {
       ))}
 
       <div className="w-full">
-        <Pagination className="w-fit bg-black rounded-xl">
+        <Pagination className="w-fit bg-black rounded-xl flex items-center">
           <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={handlePrevious}
-                className=" hover:bg-red-900 cursor-pointer"
-              />
-            </PaginationItem>
-            <PaginationItem className="pointer-events-none">
-              <PaginationLink href="#" className=" hover:pointer-events-none">
-                {page}
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext
-                onClick={handleNext}
-                className=" hover:bg-red-900 cursor-pointer"
-              />
-            </PaginationItem>
+            {/* Previous Button */}
+            {page > 1 && (
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={handlePrevious}
+                  className="hover:bg-red-900 cursor-pointer"
+                >
+                  Previous
+                </PaginationPrevious>
+              </PaginationItem>
+            )}
+
+            {/* Page Numbers */}
+            {renderPageNumbers()}
+
+            {/* Ellipsis (if needed) */}
+            {page + 3 < totalPages && (
+              <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>
+            )}
+
+            {/* Next Button */}
+            {page < totalPages && (
+              <PaginationItem>
+                <PaginationNext
+                  onClick={handleNext}
+                  className="hover:bg-red-900 cursor-pointer"
+                >
+                  Next
+                </PaginationNext>
+              </PaginationItem>
+            )}
           </PaginationContent>
         </Pagination>
       </div>

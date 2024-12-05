@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
+import MidiPlayerComponent from "./midi-player";
 
 export default function Menu() {
   const handleChangeAndSubmit = async (
@@ -53,8 +54,9 @@ export default function Menu() {
             alt={""}
             width={100}
             height={100}
-            className="rounded-lg w-[50vw]"
+            className="rounded-lg w-[50vw] mb-3"
           />
+          <MidiPlayerComponent />
           <div>
             <h1 className="text-3xl font-extrabold">Judul</h1>
             <p className="truncate">Audio</p>
