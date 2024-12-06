@@ -6,7 +6,8 @@ import os
 import zipfile
 import shutil
 from typing import List
-from faker import Faker # debug
+from faker import Faker # development
+import random # development
 
 UPLOAD_DIR= os.path.join(os.path.dirname(__file__), "uploads")
 
@@ -23,21 +24,21 @@ app.add_middleware(
     allow_headers=["*"], 
 )
 
-DATA = [
-    {
-        "id": i,
-        "image": "/favicon.ico",
-        "title": fake.sentence(nb_words=5),  # Title berupa kalimat acak
-    }
-    for i in range(1, 2345)  
-]
-
 class PaginatedResponse(BaseModel):
     items: List[dict]
     total: int
     page: int
     size: int
-
+    
+DATA = [
+    {
+        "id": i,
+        "image": "/favicon.ico",
+        "title": fake.sentence(nb_words=5),  # Title berupa kalimat acak
+        "percentage": random.uniform(0, 100),
+    }
+    for i in range(1, 2345)  
+]
 
 @app.get("/faker", response_model=PaginatedResponse)
 def get_items(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
