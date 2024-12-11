@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 import scipy.sparse.linalg as splg
 import os
-
+import time
 
 
 class ImagePCA:
@@ -15,6 +15,26 @@ class ImagePCA:
     5. Load query image
     6. Preprocess query image
     7. Find similar images
+    
+    Contoh:
+    ```python
+    path = "data/Cover_Art"
+    query_path = "query/hind.jpg"
+
+    width = 200
+    height = 200
+    images = ImagePCA.loadData(path)
+    prep_images, mean_array = ImagePCA.preprocessImages(images, width, height)
+
+    pca = ImagePCA()
+    pca.fit(prep_images, mean_array)
+
+    with Image.open(query_path) as img:
+        query_img = pca.preprocessQueryImage(img, width, height)
+        
+    similar_images = pca.findSimilarImages(query_img, prep_images, 5)
+    print(similar_images)
+    ```
 
     Catatan:
     - Pastikan library sudah terinstall
@@ -24,6 +44,7 @@ class ImagePCA:
     
     def __init__(self):
         self.U = None
+        self.S = None
         self.X_mean_array = None
         self.fit_done = False
         
@@ -71,10 +92,11 @@ class ImagePCA:
         
         # Standardize each pixel
         for i in range(N):
-            std_image = np.zeros(len_image, dtype=np.float32)
-            for j in range(len_image):
-                std_image[j] = ImagePCA.standardizePixel(images_array_1d[i][j], mean_array[j])
-            std_images.append(np.array(std_image, dtype=np.float32))
+            # std_image = np.zeros(len_image, dtype=np.float32)
+            # for j in range(len_image):
+            #     std_image[j] = ImagePCA.standardizePixel(images_array_1d[i][j], mean_array[j])
+            # std_images.append(np.array(std_image, dtype=np.float32))
+            std_images.append(images_array_1d_np[i] - mean_array)
         
         return (std_images, mean_array)
             
@@ -83,7 +105,7 @@ class ImagePCA:
         """
         Preprocesses the image by converting it to numpy array
         """
-        image_resized = image.resize((width, height), Image.BICUBIC)
+        image_resized = image.resize((width, height), Image.NEAREST)
         image_gray = image_resized.convert('L')
         image_1d = np.array(image_gray).flatten()
         return image_1d
@@ -105,11 +127,16 @@ class ImagePCA:
         """
         Preprocesses the images by converting them to numpy arrays
         """
+        start_time = time.time()
         images_preprocessed = []
         for img in images:
             img_prep = ImagePCA.preprocessImage(img, width, height)
             images_preprocessed.append(img_prep)
         std_images, mean_array = ImagePCA.stadardizeGrayImages(images_preprocessed)
+        # std_images = images_preprocessed
+        # mean_array = np.zeros(len(images_preprocessed[0]))
+        end_time = time.time()
+        print("Preprocessing time: ", end_time - start_time)
         return (std_images, mean_array)
     
     @staticmethod
@@ -128,31 +155,38 @@ class ImagePCA:
         return cov
     
     @staticmethod
-    def svdKPrincipleComponents(X, k_components):
+    def svdKPrincipleComponents(X, k_components=6):
         """
         Returns:
         U_k, S_k, Vt_k
         """
         U_k, S_k, Vt_k = splg.svds(X, k_components, which='LM', return_singular_vectors="u")
+        # U_k, S_k, Vt_k = slg.svd(X, full_matrices=False, overwrite_a=True, check_finite=False)
         return U_k, S_k, Vt_k
     
-    def fit(self, images, mean_array, k_components=50):
+    def fit(self, images, mean_array, k_components=10):
         """
         Fits the PCA model to the images
         Args:
         images: List of images as numpy arrays
         n_components: Number of components to keep
         """
-        X = ImagePCA.imagesListToArray(images)        
-        cov = ImagePCA.covariance(X)
+        start_time = time.time()
+        X = ImagePCA.imagesListToArray(images)
+        X = np.transpose(X)
+        # cov = ImagePCA.covariance(X)
         
-        U, S, Vt = ImagePCA.svdKPrincipleComponents(cov, k_components)
-        idx = np.argsort(S)[::-1]   # Indices to sort singular values in descending order
-        S = S[idx]                  # Sorted singular values
-        U = U[:, idx]               # Reorder left singular vectors
+        U, S, Vt = ImagePCA.svdKPrincipleComponents(X, k_components)
+        # U = U[:, :k_components]
+        # idx = np.argsort(S)[::-1]   # Indices to sort singular values in descending order
+        # S = S[idx]                  # Sorted singular values
+        # U = U[:, idx]               # Reorder left singular vectors
         self.U = U
+        self.S = S
         self.X_mean_array = mean_array
         self.fit_done = True
+        end_time = time.time()
+        print("Fitting time: ", end_time - start_time)
 
     @staticmethod
     def projectToPrincipalComponents(X, U_k):
@@ -170,6 +204,49 @@ class ImagePCA:
         The euclidean distance between the query vector q and the image vector zi
         """
         return np.linalg.norm(q - zi)
+    
+    
+    def _global_similarity(distance, n_dims, value_range):
+        """
+        Converts Euclidean distance to a global similarity percentage.
+
+        Parameters:
+        - distance (float): Euclidean distance between two points.
+        - n_dims (int): Number of dimensions in the embedding space.
+        - value_range (tuple): The (min, max) range of each feature.
+
+        Returns:
+        - float: Similarity percentage (0 to 100).
+        """
+        # Calculate the theoretical maximum distance
+        a, b = value_range
+        d_max = np.sqrt(n_dims * (b - a) ** 2)
+
+        # Normalize the distance
+        d_norm = min(max(distance / d_max, 0), 1)
+
+        # Calculate similarity
+        similarity = (1 - d_norm) * 100
+        return similarity
+    
+    def _max_theoretical_distance(U, S, k):
+        """
+        Computes the maximum theoretical Euclidean distance in PCA space.
+
+        Parameters:
+        - U: Left singular matrix from SVD.
+        - S: Singular values (1D array).
+        - k: Number of principal components.
+
+        Returns:
+        - float: Maximum theoretical Euclidean distance.
+        """
+        # Compute eigenvalues (lambda_i) from singular values
+        eigenvalues = S[:k] ** 2
+        
+        # Compute maximum distance
+        max_distance = np.sqrt(4 * np.sum(eigenvalues))
+        return max_distance
 
     def findSimilarImages(self, prepocessed_query, preprocessed_images, k):
         """    
@@ -186,12 +263,19 @@ class ImagePCA:
             raise ValueError('Fit the model first')
         
         query_Z = ImagePCA.projectToPrincipalComponents(prepocessed_query, self.U)
+        n_dims = self.U.shape[0]
+        # max_distance = ImagePCA._max_theoretical_distance(self.U, self.S, n_dims)
+        # print(max_distance)
         
         distances = []
         for i, img in enumerate(preprocessed_images):
             img_Z = ImagePCA.projectToPrincipalComponents(img, self.U)
             distance = ImagePCA.euclideanDistance(query_Z, img_Z)
+            # distances.append((i, ImagePCA._global_similarity(distance, n_dims, (0, max_distance))))
             distances.append((i, distance))
         
-        distances.sort(key=lambda x: x[1])
+        distances.sort(key=lambda x: x[1], reverse=False)
+        dmax = distances[-1][1]
+        distances = [(i, d, 1-(d)/(dmax)) for i, d in distances]
+        
         return distances[:k]
