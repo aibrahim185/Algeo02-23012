@@ -6,7 +6,8 @@ import os
 import zipfile
 import shutil
 from typing import List
-from faker import Faker # debug
+from faker import Faker # development
+import random # development
 
 UPLOAD_DIR= os.path.join(os.path.dirname(__file__), "uploads")
 
@@ -23,21 +24,21 @@ app.add_middleware(
     allow_headers=["*"], 
 )
 
-DATA = [
-    {
-        "id": i,
-        "image": "/favicon.ico",
-        "title": fake.sentence(nb_words=5),  # Title berupa kalimat acak
-    }
-    for i in range(1, 102)  
-]
-
 class PaginatedResponse(BaseModel):
     items: List[dict]
     total: int
     page: int
     size: int
-
+    
+DATA = [
+    {
+        "id": i,
+        "image": "/favicon.ico",
+        "title": fake.sentence(nb_words=5),  # Title berupa kalimat acak
+        "percentage": random.uniform(0, 100),
+    }
+    for i in range(1, 2345)  
+]
 
 @app.get("/faker", response_model=PaginatedResponse)
 def get_items(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
@@ -55,6 +56,13 @@ def get_items(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
 @app.post("/uploaddata")
 async def create_upload_file(file_uploads: list[UploadFile]):
     delete_data()
+    
+    audio_dir = os.path.join(UPLOAD_DIR, "audio")
+    image_dir = os.path.join(UPLOAD_DIR, "images")
+    
+    os.makedirs(audio_dir, exist_ok=True)
+    os.makedirs(image_dir, exist_ok=True)
+    
     for file in file_uploads:
         file_path = os.path.join(UPLOAD_DIR, file.filename)
         with open(file_path, "wb") as f:
@@ -63,6 +71,11 @@ async def create_upload_file(file_uploads: list[UploadFile]):
             
         if file.filename.endswith(".zip"):
             extract_zip(file_path, UPLOAD_DIR)
+            
+        if file.filename.endswith((".png", ".jpg", ".jpeg")):
+            shutil.move(file_path, os.path.join(image_dir, file.filename))
+        elif file.filename.endswith(".mid"):
+            shutil.move(file_path, os.path.join(audio_dir, file.filename))
         
     return {"filenames": [f.filename for f in file_uploads]}
 
