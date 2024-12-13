@@ -18,6 +18,8 @@ class ImagePCA:
     
     Contoh:
     ```python
+    from imagePCA import ImagePCA
+    
     path = "data/Cover_Art"
     query_path = "query/hind.jpg"
 
@@ -34,6 +36,8 @@ class ImagePCA:
         
     similar_images = pca.findSimilarImages(query_img, prep_images, 5)
     print(similar_images)
+    
+    # Output: List[(index, euclidean_distance, similarity percentage)] of 5 most similar images to the query image
     ```
 
     Catatan:
@@ -173,7 +177,8 @@ class ImagePCA:
         """
         start_time = time.time()
         X = ImagePCA.imagesListToArray(images)
-        X = np.transpose(X)
+        N = X.shape[0]
+        X = np.transpose(X) / np.sqrt(N)
         # cov = ImagePCA.covariance(X)
         
         U, S, Vt = ImagePCA.svdKPrincipleComponents(X, k_components)
@@ -275,7 +280,10 @@ class ImagePCA:
             distances.append((i, distance))
         
         distances.sort(key=lambda x: x[1], reverse=False)
+        # standardized_distances = np.array([d for i, d in distances])
+        # standardized_distances = 
         dmax = distances[-1][1]
-        distances = [(i, d, 1-(d)/(dmax)) for i, d in distances]
+        # std = np.std([d for i, d in distances])
+        distances = [(i, d, 1 - d/dmax) for i, d in distances]
         
         return distances[:k]
