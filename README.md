@@ -19,7 +19,7 @@ Windows
 ```bash
 cd src/backend/
 python -m venv venv
-.\venv\Scripts\activate.bat
+.\venv\Scripts\activate
 ```
 
 ### Setup Frontend
