@@ -18,7 +18,7 @@ Windows
 
 ```bash
 cd src/backend/
-python3 -m venv venv
+python -m venv venv
 .\venv\Scripts\activate.bat
 ```
 
