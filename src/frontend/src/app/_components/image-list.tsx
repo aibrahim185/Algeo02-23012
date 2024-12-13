@@ -14,11 +14,17 @@ import {
 
 interface DataItem {
   id: number;
-  image: string;
   title: string;
+  image?: string;
+  audio?: string;
 }
 
-export default function ImageList() {
+interface MediaListProps {
+  dataType: "image" | "music";
+  fetchUrl: string;
+}
+
+export default function MediaList({ dataType, fetchUrl }: MediaListProps) {
   const [items, setItems] = useState<DataItem[]>([]);
   const [page, setPage] = useState(1);
   const [size] = useState(28);
@@ -26,16 +32,22 @@ export default function ImageList() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(`api/faker?page=${page}&size=${size}`, {
+      const res = await fetch(`api/${fetchUrl}?page=${page}&size=${size}`, {
         method: "GET",
       });
       const data = await res.json();
-      setItems(data.items);
+
+      if (data && Array.isArray(data.items)) {
+        setItems(data.items);
+      } else {
+        setItems([]);
+      }
+
       setTotal(data.total);
     };
 
     fetchData();
-  }, [page, size]);
+  }, [page, size, fetchUrl]);
 
   const totalPages = Math.ceil(total / size);
 
@@ -68,7 +80,7 @@ export default function ImageList() {
         <PaginationLink
           href="#"
           onClick={() => handleJumpToPage(p)}
-          className={p === page ? "bg-gray-900 text-white" : ""}
+          className={p === page ? "bg-gray-900" : ""}
         >
           {p}
         </PaginationLink>
@@ -83,13 +95,21 @@ export default function ImageList() {
           key={d.id}
           className="h-fit overflow-hidden p-2 pb-0 bg-black rounded-xl flex flex-col text-center"
         >
-          <Image
-            src={d.image}
-            alt={d.title}
-            width={100}
-            height={100}
-            className="rounded-lg"
-          />
+          {dataType === "image" ? (
+            <Image
+              src={d.image || "/placeholder.ico"}
+              alt={d.title}
+              width={100}
+              height={100}
+              className="rounded-lg"
+            />
+          ) : (
+            <audio controls>
+              <source src={d.audio || "/placeholder.mp3"} />
+              Your browser does not support the audio element.
+            </audio>
+          )}
+
           <h1 className="font-bold m-1 max-w-[92px] overflow-hidden whitespace-nowrap">
             <span className="marquee inline-block">{d.title}</span>
           </h1>

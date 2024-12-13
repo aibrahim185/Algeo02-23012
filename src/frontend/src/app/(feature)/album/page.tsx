@@ -5,7 +5,7 @@ import ImageList from "../../_components/image-list";
 export default function AlbumPage() {
   return (
     <div className="grid place-content-center w-full">
-      <ImageList />
+      <ImageList dataType={"image"} fetchUrl={"find_similar_images"} />
     </div>
   );
 }

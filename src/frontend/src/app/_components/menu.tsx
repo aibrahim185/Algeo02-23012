@@ -31,18 +31,15 @@ export default function Menu() {
         });
 
         if (res.ok) {
-          console.log("aman");
           toast("File Submitted Successfully!", {
             description: "Please continue to submit the data set.",
           });
         } else {
-          console.log("ga aman");
           toast("Something Went Wrong!", {
             description: "Please try again later",
           });
         }
       } catch {
-        console.log("ga aman 2");
         toast("Something Went Wrong!", {
           description: "Please try again later",
         });
@@ -68,18 +65,15 @@ export default function Menu() {
       });
 
       if (res.ok) {
-        console.log("aman");
         toast("File Submitted Successfully!", {
           description: "Please continue to submit the data set.",
         });
       } else {
-        console.log("ga aman");
         toast("Something Went Wrong!", {
           description: "Please try again later",
         });
       }
     } catch {
-      console.log("ga aman 2");
       toast("Something Went Wrong!", {
         description: "Please try again later",
       });
@@ -87,24 +81,25 @@ export default function Menu() {
   };
 
   return (
-    <div className="h-[96vh] min-w-sm max-w-sm sticky top-5 mx-5 flex">
-      <div className="h-full p-6 rounded-3xl flex flex-col justify-between gap-6">
-        <div className="size-fit bg-black p-3 rounded-lg">
+    <div className="h-[96vh] min-w-full max-w-full sticky top-5 mx-5 flex overflow-hidden">
+      <div className="h-full p-6 rounded-3xl flex flex-col justify-between gap-6 flex-wrap">
+        <div className="bg-black p-3 rounded-lg flex flex-col items-center">
           <Image
             src={"/favicon.ico"}
-            alt={""}
+            alt={"Logo"}
             width={100}
             height={100}
-            className="rounded-lg w-[50vw] mb-3"
+            className="rounded-lg w-full max-w-[200px] mb-3"
           />
           <MidiPlayerComponent />
-          <div>
+          <div className="text-center">
             <h1 className="text-3xl font-extrabold">Judul</h1>
             <p className="truncate">Audio</p>
             <p className="truncate">Picture</p>
             <p className="truncate">Mapper</p>
           </div>
         </div>
+
         <div
           className="flex flex-col justify-between gap-3 bg-black p-3 rounded-lg"
           onDrop={handleDrop}
@@ -114,7 +109,7 @@ export default function Menu() {
             <Input
               type="file"
               id="file-input"
-              className="absolute inset-0 opacity-0 cursor-pointer"
+              className="absolute inset-0 opacity-0 cursor-pointer w-full"
               onChange={handleChangeAndSubmit}
               ref={(input) => {
                 if (input) {
@@ -129,7 +124,7 @@ export default function Menu() {
               className="w-full text-red-600"
               variant={"ghost"}
             >
-              Upload
+              Upload Dataset
             </Button>
           </div>
           <Button
@@ -143,12 +138,6 @@ export default function Menu() {
             variant={"ghost"}
           >
             Picture
-          </Button>
-          <Button
-            className="w-full text-red-600 border-red-900 hover:bg-red-900 border-2"
-            variant={"ghost"}
-          >
-            Mapper
           </Button>
         </div>
       </div>

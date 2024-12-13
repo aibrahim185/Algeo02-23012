@@ -1,3 +1,7 @@
+Pillow
+numpy
+scipy
 fastapi
 uvicorn
-faker
+pydantic
+python-multipart

@@ -5,13 +5,15 @@ from pydantic import BaseModel
 import os
 import zipfile
 import shutil
+import numpy as np
+from PIL import Image
 from typing import List
-from faker import Faker # development
-import random # development
+import time
+from io import BytesIO
+from api.ImagePCA import ImagePCA
 
-UPLOAD_DIR= os.path.join(os.path.dirname(__file__), "uploads")
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 
-fake = Faker()
 app = FastAPI()
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
@@ -29,43 +31,6 @@ class PaginatedResponse(BaseModel):
     total: int
     page: int
     size: int
-    
-DATA = [
-    {
-        "id": i,
-        "image": "/favicon.ico",
-        "title": fake.sentence(nb_words=5),  # Title berupa kalimat acak
-        "percentage": random.uniform(0, 100),
-    }
-    for i in range(1, 2345)  
-]
-
-@app.get("/faker", response_model=PaginatedResponse)
-def get_items(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
-    start = (page - 1) * size
-    end = start + size
-    items = DATA[start:end]
-    total = len(DATA)
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "size": size,
-    }
-    
-@app.get("/search", response_model=PaginatedResponse)
-def search_items(query: str = Query(...), page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
-    filtered_items = [item for item in DATA if query.lower() in item["title"].lower()]
-    start = (page - 1) * size
-    end = start + size
-    items = filtered_items[start:end]
-    total = len(filtered_items)
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "size": size,
-    }
 
 @app.post("/uploaddata")
 async def create_upload_file(file_uploads: list[UploadFile]):
@@ -93,21 +58,43 @@ async def create_upload_file(file_uploads: list[UploadFile]):
         
     return {"filenames": [f.filename for f in file_uploads]}
 
-@app.get("/")
-def hello_world():
-    return {"Hello": "World"}
+@app.get("/find_similar_images")
+async def find_similar_images(query_image: UploadFile, k: int = Query(5, gt=0)):
+    # Load uploaded images for PCA
+    image_dir = os.path.join(UPLOAD_DIR, "images")
+    images = ImagePCA.loadData(image_dir)
 
-@app.get("/sorong")
-def sorong():
-    return {"ambalabu": "jangan ke sini~"}
+    # Preprocess images
+    width = 200
+    height = 200
+    prep_images, mean_array = ImagePCA.preprocessImages(images, width, height)
+
+    # Initialize and fit the PCA model
+    pca = ImagePCA()
+    pca.fit(prep_images, mean_array)
+
+    # Process the query image
+    with Image.open(BytesIO(await query_image.read())) as img:
+        query_img = pca.preprocessQueryImage(img, width, height)
+        
+    # Find similar images
+    similar_images = pca.findSimilarImages(query_img, prep_images, k)
     
-@app.get("/music")
-def sorong():
-    return {"text": "ini api music"}
-
-@app.get("/album")
-def sorong():
-    return {"text": "ini api album"}
+    response_items = []
+    for idx, dist, sim in similar_images:
+        img_path = os.path.join(image_dir, f"{idx}.jpg")
+        response_items.append({
+            "id": idx,
+            "image": f"/uploads/images/{os.path.basename(img_path)}",
+            "similarity_percentage": sim * 100
+        })
+    
+    return PaginatedResponse(
+        items=response_items,
+        total=len(similar_images),
+        page=1,
+        size=k
+    )
 
 def delete_data():
     exclude_files = {".gitkeep", ".gitignore"}
@@ -115,20 +102,18 @@ def delete_data():
     for file in os.listdir(UPLOAD_DIR):
         file_path = os.path.join(UPLOAD_DIR, file)
 
-        # Jika item adalah file, hapus jika tidak ada dalam exclude_files
         if os.path.isfile(file_path) and file not in exclude_files:
             os.remove(file_path)
 
-        # Jika item adalah direktori, hapus isi direktori (rekursif) dan direktori itu sendiri
         elif os.path.isdir(file_path):
-            shutil.rmtree(file_path)  # Menghapus direktori dan isinya
+            shutil.rmtree(file_path)
 
     return {"message": "Data deleted"}
 
 def extract_zip(zip_file_path, extract_to_dir, file_to_extract=None):
     """
     Mengekstrak file .zip ke direktori tertentu.
-    Jika `file_to_extract` diberikan, hanya file tersebut yang akan diekstrak.
+    Jika file_to_extract diberikan, hanya file tersebut yang akan diekstrak.
     
     Parameters:
     zip_file_path (str): Path ke file .zip
