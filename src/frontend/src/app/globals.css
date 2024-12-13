@@ -85,3 +85,29 @@ body {
   will-change: transform;
   animation: marquee 7s linear infinite;
 }
+
+.midi-player-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.midi-player-wrapper div[title="play"] {
+  background-color: #4caf50 !important;
+}
+
+.midi-player-wrapper div[title="pause"] {
+  background-color: #f44336 !important;
+}
+
+.midi-player-wrapper div[title="loop"],
+div[title="midi"] {
+  display: none !important;
+}
+.midi-player-wrapper div[title="midi"] {
+  display: none !important;
+}
+
+.midi-player-wrapper span > div {
+  background: none !important;
+}

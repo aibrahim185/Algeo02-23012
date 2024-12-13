@@ -52,6 +52,20 @@ def get_items(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
         "page": page,
         "size": size,
     }
+    
+@app.get("/search", response_model=PaginatedResponse)
+def search_items(query: str = Query(...), page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
+    filtered_items = [item for item in DATA if query.lower() in item["title"].lower()]
+    start = (page - 1) * size
+    end = start + size
+    items = filtered_items[start:end]
+    total = len(filtered_items)
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+    }
 
 @app.post("/uploaddata")
 async def create_upload_file(file_uploads: list[UploadFile]):
