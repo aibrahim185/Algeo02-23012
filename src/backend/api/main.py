@@ -45,7 +45,7 @@ def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
         {
             "id": idx, 
             "title": file, 
-            "image": f"/api/uploads/images/{file}",    
+            "image": f"/api/uploads/images/{file}" if file in image_files else "/placeholder.ico",    
         }
         for idx, file in enumerate(image_files + audio_files)
     ]
@@ -63,9 +63,9 @@ def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
     }
 
 @app.post("/uploaddata")
-async def create_upload_file(file_uploads: list[UploadFile]):
+async def create_upload_file(file_uploads: List[UploadFile]):
     delete_data()
-    
+
     audio_dir = os.path.join(UPLOAD_DIR, "audio")
     image_dir = os.path.join(UPLOAD_DIR, "images")
     query_dir = os.path.join(UPLOAD_DIR, "query")
@@ -73,22 +73,42 @@ async def create_upload_file(file_uploads: list[UploadFile]):
     os.makedirs(audio_dir, exist_ok=True)
     os.makedirs(image_dir, exist_ok=True)
     os.makedirs(query_dir, exist_ok=True)
-    
+
+    filenames = []
+
+    # Process each uploaded file
     for file in file_uploads:
         file_path = os.path.join(UPLOAD_DIR, file.filename)
+        filenames.append(file.filename)
+
+        # Save the uploaded file
         with open(file_path, "wb") as f:
             content = await file.read()
             f.write(content)
             
+        # If the file is a zip, extract it
         if file.filename.endswith(".zip"):
             extract_zip(file_path, UPLOAD_DIR)
-            
-        if file.filename.endswith((".png", ".jpg", ".jpeg")):
+
+            # After extraction, process extracted files
+            for root, dirs, files in os.walk(UPLOAD_DIR):
+                for extracted_file in files:
+                    extracted_file_path = os.path.join(root, extracted_file)
+
+                    if extracted_file.endswith((".png", ".jpg", ".jpeg")):
+                        shutil.move(extracted_file_path, os.path.join(image_dir, extracted_file))
+                    elif extracted_file.endswith(".mid"):
+                        shutil.move(extracted_file_path, os.path.join(audio_dir, extracted_file))
+
+            os.remove(file_path)
+
+        elif file.filename.endswith((".png", ".jpg", ".jpeg")):
             shutil.move(file_path, os.path.join(image_dir, file.filename))
+        
         elif file.filename.endswith(".mid"):
             shutil.move(file_path, os.path.join(audio_dir, file.filename))
-        
-    return {"filenames": [f.filename for f in file_uploads]}
+
+    return {"filenames": filenames}
 
 similar_images_cache = []
 

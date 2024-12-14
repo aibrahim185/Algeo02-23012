@@ -22,7 +22,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [fetchUrl, setFetchUrl] = useState("uploads");
   const [midiFilePath, setMidiFilePath] = useState("/midi/test1.mid");
   const [imageFilePath, setImageFilePath] = useState("/favicon.ico");
-  const [title, setTitle] = useState("Test Title");
+  const [title, setTitle] = useState("Ambalabu");
 
   return (
     <DataContext.Provider
