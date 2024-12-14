@@ -21,14 +21,14 @@ interface DataItem {
 
 interface MediaListProps {
   dataType: "image" | "music";
-  fetchUrl: string;
 }
 
-export default function MediaList({ dataType, fetchUrl }: MediaListProps) {
+export default function MediaList({ dataType }: MediaListProps) {
   const [items, setItems] = useState<DataItem[]>([]);
   const [page, setPage] = useState(1);
   const [size] = useState(28);
   const [total, setTotal] = useState(0);
+  const fetchUrl = "uploads";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,7 +119,6 @@ export default function MediaList({ dataType, fetchUrl }: MediaListProps) {
       <div className="w-full">
         <Pagination className="w-fit bg-black rounded-xl flex items-center">
           <PaginationContent>
-            {/* Previous Button */}
             {page > 1 && (
               <PaginationItem>
                 <PaginationPrevious
@@ -131,17 +130,14 @@ export default function MediaList({ dataType, fetchUrl }: MediaListProps) {
               </PaginationItem>
             )}
 
-            {/* Page Numbers */}
             {renderPageNumbers()}
 
-            {/* Ellipsis (if needed) */}
             {page + 3 < totalPages && (
               <PaginationItem>
                 <PaginationEllipsis />
               </PaginationItem>
             )}
 
-            {/* Next Button */}
             {page < totalPages && (
               <PaginationItem>
                 <PaginationNext

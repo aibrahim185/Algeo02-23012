@@ -32,6 +32,31 @@ class PaginatedResponse(BaseModel):
     page: int
     size: int
 
+@app.get("/uploads", response_model=PaginatedResponse)
+def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
+    audio_dir = os.path.join(UPLOAD_DIR, "audio")
+    image_dir = os.path.join(UPLOAD_DIR, "images")
+    
+    image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
+    audio_files = [f for f in os.listdir(audio_dir) if f.endswith((".mid"))]
+    
+    files = [
+        {"id": idx, "title": file, "image": f"/api/uploads/images/{file}"}
+        for idx, file in enumerate(image_files + audio_files)
+    ]
+    
+    start = (page - 1) * size
+    end = start + size
+    items = files[start:end]
+    total = len(files)
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+    }
+
 @app.post("/uploaddata")
 async def create_upload_file(file_uploads: list[UploadFile]):
     delete_data()

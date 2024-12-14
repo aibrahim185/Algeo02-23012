@@ -31,15 +31,18 @@ export default function Menu() {
         });
 
         if (res.ok) {
+          console.log("aman");
           toast("File Submitted Successfully!", {
             description: "Please continue to submit the data set.",
           });
         } else {
+          console.log("ga aman");
           toast("Something Went Wrong!", {
             description: "Please try again later",
           });
         }
       } catch {
+        console.log("ga aman 2");
         toast("Something Went Wrong!", {
           description: "Please try again later",
         });
@@ -65,15 +68,18 @@ export default function Menu() {
       });
 
       if (res.ok) {
+        console.log("aman");
         toast("File Submitted Successfully!", {
           description: "Please continue to submit the data set.",
         });
       } else {
+        console.log("ga aman");
         toast("Something Went Wrong!", {
           description: "Please try again later",
         });
       }
     } catch {
+      console.log("ga aman 2");
       toast("Something Went Wrong!", {
         description: "Please try again later",
       });
@@ -81,12 +87,12 @@ export default function Menu() {
   };
 
   return (
-    <div className="h-[96vh] min-w-full max-w-full sticky top-5 mx-5 flex overflow-hidden">
-      <div className="h-full p-6 rounded-3xl flex flex-col justify-between gap-6 flex-wrap">
+    <div className="h-[96vh] min-w-sm max-w-sm sticky top-5 mx-5 flex">
+      <div className="h-full p-6 rounded-3xl flex flex-col justify-between gap-6">
         <div className="bg-black p-3 rounded-lg flex flex-col items-center">
           <Image
             src={"/favicon.ico"}
-            alt={"Logo"}
+            alt={""}
             width={100}
             height={100}
             className="rounded-lg w-full max-w-[200px] mb-3"
@@ -99,7 +105,6 @@ export default function Menu() {
             <p className="truncate">Mapper</p>
           </div>
         </div>
-
         <div
           className="flex flex-col justify-between gap-3 bg-black p-3 rounded-lg"
           onDrop={handleDrop}
@@ -109,7 +114,7 @@ export default function Menu() {
             <Input
               type="file"
               id="file-input"
-              className="absolute inset-0 opacity-0 cursor-pointer w-full"
+              className="absolute inset-0 opacity-0 cursor-pointer"
               onChange={handleChangeAndSubmit}
               ref={(input) => {
                 if (input) {
