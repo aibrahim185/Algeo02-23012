@@ -8,11 +8,13 @@ import shutil
 from PIL import Image
 from typing import List
 from io import BytesIO
-from api.ImagePCA import ImagePCA
 import copy
 from midiutil import MIDIFile
 import librosa
 import numpy as np
+
+from api.ImagePCA import ImagePCA
+from api.audio import get_similar_audio
 
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 
@@ -196,6 +198,66 @@ async def get_similar_images(page: int = Query(1, gt=0), size: int = Query(10, g
         size=size,
     )
     
+@app.post("/find_similar_midi")
+async def find_similar_midi(query_midi: UploadFile):
+    """
+    Endpoint untuk mencari file MIDI yang mirip dengan file MIDI yang diunggah.
+    - query_midi: File MIDI yang diunggah untuk pencarian
+    - threshold: Batas minimal kesamaan untuk menyaring hasil pencarian
+    """
+
+    query_dir = os.path.join(UPLOAD_DIR, "query")
+    os.makedirs(query_dir, exist_ok=True)
+
+    query_midi_path = os.path.join(query_dir, query_midi.filename)
+    with open(query_midi_path, "wb") as f:
+        content = await query_midi.read()
+        f.write(content)
+
+    similar_midi = get_similar_audio(query_midi_path, threshold=0)
+
+    response_items = []
+    for midi_file, similarity in similar_midi:
+        response_items.append({
+            "id": midi_file,
+            "title": f"{round(similarity, 2)}%",
+            "midi_file": f"/uploads/audio/{midi_file}",
+            "image": "/placeholder.ico",
+        })
+
+    return {
+        "items": response_items,
+        "total": len(similar_midi),
+        "page": 1,
+        "size": len(similar_midi),
+    }
+
+@app.post("/upload_audio_and_convert")
+async def upload_audio_and_convert(file: UploadFile):
+    audio_dir = os.path.join(UPLOAD_DIR, "audio")
+    query_dir = os.path.join(UPLOAD_DIR, "query")
+    
+    # Ensure directories exist
+    os.makedirs(audio_dir, exist_ok=True)
+    os.makedirs(query_dir, exist_ok=True)
+
+    # Save the uploaded WAV file
+    audio_path = os.path.join(audio_dir, file.filename)
+    with open(audio_path, "wb") as f:
+        content = await file.read()
+        f.write(content)
+
+    # Convert WAV to MIDI
+    if not file.filename.endswith(".mid"):
+        midi_path = audio_to_midi(audio_path)
+    else:
+        midi_path = audio_path
+    
+    # Move MIDI file to the query directory
+    shutil.move(midi_path, os.path.join(query_dir, "output.mid"))
+
+    return {"message": "Audio converted to MIDI", "midi_file": "/uploads/query/output.mid"}
+
 def audio_to_midi(audio_path: str) -> str:
     y, sr = librosa.load(audio_path, sr=None)
     pitches, magnitudes = librosa.core.piptrack(y=y, sr=sr)
@@ -218,30 +280,6 @@ def audio_to_midi(audio_path: str) -> str:
         midi.writeFile(f)
 
     return midi_path
-
-@app.post("/upload_audio_and_convert")
-async def upload_audio_and_convert(file: UploadFile):
-    audio_dir = os.path.join(UPLOAD_DIR, "audio")
-    query_dir = os.path.join(UPLOAD_DIR, "query")
-    
-    # Ensure directories exist
-    os.makedirs(audio_dir, exist_ok=True)
-    os.makedirs(query_dir, exist_ok=True)
-
-    # Save the uploaded WAV file
-    audio_path = os.path.join(audio_dir, file.filename)
-    with open(audio_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
-
-    # Convert WAV to MIDI
-    midi_path = audio_to_midi(audio_path)
-    
-    # Move MIDI file to the query directory
-    shutil.move(midi_path, os.path.join(query_dir, "output.mid"))
-
-    return {"message": "Audio converted to MIDI", "midi_file": "/uploads/query/output.mid"}
-
 
 def delete_data():
     exclude_files = {".gitkeep", ".gitignore"}

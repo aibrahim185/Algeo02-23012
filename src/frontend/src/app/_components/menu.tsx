@@ -109,6 +109,46 @@ export default function Menu() {
     }
   };
 
+  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const file = e.target.files[0];
+      setSelectedFiles([file]);
+
+      const formData = new FormData();
+      formData.append("query_audio", file);
+
+      try {
+        const endPoint = "api/find_similar_midi";
+        const res = await fetch(endPoint, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log(data);
+
+          setImageFilePath(`/placeholder.ico`);
+          setTitle(file.name);
+          setRefreshKey(refreshKey + 1);
+          setFetchUrl("get_similar_midi");
+
+          toast("Image Submitted Successfully!");
+        } else {
+          console.log("Upload failed");
+          toast("Something Went Wrong!", {
+            description: "Please try again later",
+          });
+        }
+      } catch {
+        console.log("Error in upload");
+        toast("Something Went Wrong!", {
+          description: "Please try again later",
+        });
+      }
+    }
+  };
+
   const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const filesArray = Array.from(event.dataTransfer.files);
@@ -196,12 +236,22 @@ export default function Menu() {
               Upload Dataset
             </Button>
           </div>
-          <Button
-            className="w-full text-red-600 border-red-900 hover:bg-red-900 border-2"
-            variant={"ghost"}
-          >
-            Audio
-          </Button>
+          <div className="relative border-2 border-red-900 hover:bg-red-900 rounded-lg">
+            <Input
+              type="file"
+              id="file-input"
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={handleAudioUpload}
+              accept=".mid, .wav"
+            />
+            <Button
+              type="button"
+              className="w-full text-red-600"
+              variant={"ghost"}
+            >
+              Audio
+            </Button>
+          </div>
           <div className="relative border-2 border-red-900 hover:bg-red-900 rounded-lg">
             <Input
               type="file"

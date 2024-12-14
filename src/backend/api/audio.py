@@ -111,7 +111,7 @@ def process_single_midi(file_data):
 
 # Main function
 def get_similar_audio(target_midi_path, threshold=0):
-    search_directory="uploads/audio"
+    search_directory = os.path.join(os.path.dirname(__file__), "uploads/audio")
     start_time = time.time()
 
     # Process target MIDI file
@@ -143,7 +143,7 @@ def get_similar_audio(target_midi_path, threshold=0):
         trimmed_db_features = db_features[:min_windows]
 
         similarity = compute_similarity_batch(trimmed_target_features, trimmed_db_features) * 100
-        print(f"File: {midi_file} - Similarity: {similarity:.2f}%")
+        # print(f"File: {midi_file} - Similarity: {similarity:.2f}%")
 
         if similarity >= threshold:
             similar_songs.append((midi_file, similarity))
@@ -151,7 +151,7 @@ def get_similar_audio(target_midi_path, threshold=0):
     similar_songs.sort(key=lambda x: x[1], reverse=True)
 
     end_time = time.time()
-    print(f"Execution Time: {end_time - start_time:.2f} seconds")
+    print(f"Execution Time: {(end_time - start_time)*1000:.2f} ms")
     return similar_songs
 
 
