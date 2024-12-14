@@ -151,12 +151,13 @@ def get_similar_audio(target_midi_path, threshold=0):
     similar_songs.sort(key=lambda x: x[1], reverse=True)
 
     end_time = time.time()
-    print(f"Execution Time: {end_time - start_time:.2f} seconds")
+    print(f"Execution Time: {(end_time - start_time)*1000:.2f} ms")
     return similar_songs
 
 
-# # Example usage
-# similar_files = get_similar_audio("Caught Up In You.mid", threshold=50)
-# print("Similar Files:")
-# for file, similarity in similar_files:
-#     print(f"{file}: {similarity:.2f}%")
+# Example usage
+# if __name__ == "__main__":
+#     similar_files = get_similar_audio("Caught Up In You.mid", threshold=50)
+#     print("Similar Files:")
+#     for file, similarity in similar_files:
+#         print(f"{file}: {similarity:.2f}%")
