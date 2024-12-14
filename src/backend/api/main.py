@@ -5,10 +5,8 @@ from pydantic import BaseModel
 import os
 import zipfile
 import shutil
-import numpy as np
 from PIL import Image
 from typing import List
-import time
 from io import BytesIO
 from api.ImagePCA import ImagePCA
 import copy
