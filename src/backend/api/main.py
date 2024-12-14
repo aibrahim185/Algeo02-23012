@@ -5,13 +5,16 @@ from pydantic import BaseModel
 import os
 import zipfile
 import shutil
+import numpy as np
+from PIL import Image
 from typing import List
-from faker import Faker # development
-import random # development
+import time
+from io import BytesIO
+from api.ImagePCA import ImagePCA
+import copy
 
-UPLOAD_DIR= os.path.join(os.path.dirname(__file__), "uploads")
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 
-fake = Faker()
 app = FastAPI()
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
@@ -29,37 +32,29 @@ class PaginatedResponse(BaseModel):
     total: int
     page: int
     size: int
-    
-DATA = [
-    {
-        "id": i,
-        "image": "/favicon.ico",
-        "title": fake.sentence(nb_words=5),  # Title berupa kalimat acak
-        "percentage": random.uniform(0, 100),
-    }
-    for i in range(1, 2345)  
-]
 
-@app.get("/faker", response_model=PaginatedResponse)
-def get_items(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
-    start = (page - 1) * size
-    end = start + size
-    items = DATA[start:end]
-    total = len(DATA)
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "size": size,
-    }
+@app.get("/uploads", response_model=PaginatedResponse)
+def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
+    audio_dir = os.path.join(UPLOAD_DIR, "audio")
+    image_dir = os.path.join(UPLOAD_DIR, "images")
     
-@app.get("/search", response_model=PaginatedResponse)
-def search_items(query: str = Query(...), page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
-    filtered_items = [item for item in DATA if query.lower() in item["title"].lower()]
+    image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
+    audio_files = [f for f in os.listdir(audio_dir) if f.endswith((".mid"))]
+    
+    files = [
+        {
+            "id": idx, 
+            "title": file, 
+            "image": f"/api/uploads/images/{file}",    
+        }
+        for idx, file in enumerate(image_files + audio_files)
+    ]
+    
     start = (page - 1) * size
     end = start + size
-    items = filtered_items[start:end]
-    total = len(filtered_items)
+    items = files[start:end]
+    total = len(files)
+    
     return {
         "items": items,
         "total": total,
@@ -73,9 +68,11 @@ async def create_upload_file(file_uploads: list[UploadFile]):
     
     audio_dir = os.path.join(UPLOAD_DIR, "audio")
     image_dir = os.path.join(UPLOAD_DIR, "images")
+    query_dir = os.path.join(UPLOAD_DIR, "query")
     
     os.makedirs(audio_dir, exist_ok=True)
     os.makedirs(image_dir, exist_ok=True)
+    os.makedirs(query_dir, exist_ok=True)
     
     for file in file_uploads:
         file_path = os.path.join(UPLOAD_DIR, file.filename)
@@ -93,21 +90,90 @@ async def create_upload_file(file_uploads: list[UploadFile]):
         
     return {"filenames": [f.filename for f in file_uploads]}
 
-@app.get("/")
-def hello_world():
-    return {"Hello": "World"}
+similar_images_cache = []
 
-@app.get("/sorong")
-def sorong():
-    return {"ambalabu": "jangan ke sini~"}
+@app.post("/find_similar_images", response_model=PaginatedResponse)
+async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0)):
+    query_dir = os.path.join(UPLOAD_DIR, "query")
     
-@app.get("/music")
-def sorong():
-    return {"text": "ini api music"}
+    # Clear the contents of the query directory
+    for file in os.listdir(query_dir):
+        file_path = os.path.join(query_dir, file)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+    
+    # Save the uploaded query image
+    query_image_path = os.path.join(query_dir, query_image.filename)
+    content = await query_image.read()
+    with open(query_image_path, "wb") as f:
+        f.write(content)
+    
+    # Load uploaded images for PCA
+    image_dir = os.path.join(UPLOAD_DIR, "images")
+    images = ImagePCA.loadData(image_dir)
 
-@app.get("/album")
-def sorong():
-    return {"text": "ini api album"}
+    image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
+
+    # Preprocess images
+    width = 200
+    height = 200
+    prep_images, mean_array = ImagePCA.preprocessImages(images, width, height)
+
+    # Initialize and fit the PCA model
+    pca = ImagePCA()
+    pca.fit(prep_images, mean_array)
+
+    # Process the query image
+    with Image.open(BytesIO(content)) as img:
+        query_img = pca.preprocessQueryImage(img, width, height)
+        
+    # Find similar images
+    similar_images = pca.findSimilarImages(query_img, prep_images, len(image_files))
+    similar_images_cache[:] = copy.deepcopy(similar_images)
+    
+    print(similar_images[:5])
+    print(similar_images_cache[:5])
+    
+    response_items = []
+    for idx, dist, sim in similar_images:
+        response_items.append({
+            "id": idx,
+            "title": sim * 100,
+            "image": f"/api/uploads/images/{image_files[idx]}",
+        })
+    
+    return PaginatedResponse(
+        items=response_items,
+        total=len(similar_images),
+        page=1,
+        size=k,
+    )
+    
+@app.get("/get_similar_images", response_model=PaginatedResponse)
+async def get_similar_images(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
+    image_dir = os.path.join(UPLOAD_DIR, "images")
+
+    image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
+
+    total = len(similar_images_cache)
+    
+    start = (page - 1) * size
+    end = start + size
+    items = [
+        {
+            "id": idx,
+            "title": f"{round(sim * 100, 3)}%",
+            "image": f"/api/uploads/images/{image_files[idx]}",
+        }
+        for idx, dist, sim in similar_images_cache[start:end]
+    ]
+
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        size=size,
+    )
 
 def delete_data():
     exclude_files = {".gitkeep", ".gitignore"}
@@ -115,20 +181,18 @@ def delete_data():
     for file in os.listdir(UPLOAD_DIR):
         file_path = os.path.join(UPLOAD_DIR, file)
 
-        # Jika item adalah file, hapus jika tidak ada dalam exclude_files
         if os.path.isfile(file_path) and file not in exclude_files:
             os.remove(file_path)
 
-        # Jika item adalah direktori, hapus isi direktori (rekursif) dan direktori itu sendiri
         elif os.path.isdir(file_path):
-            shutil.rmtree(file_path)  # Menghapus direktori dan isinya
+            shutil.rmtree(file_path)
 
     return {"message": "Data deleted"}
 
 def extract_zip(zip_file_path, extract_to_dir, file_to_extract=None):
     """
     Mengekstrak file .zip ke direktori tertentu.
-    Jika `file_to_extract` diberikan, hanya file tersebut yang akan diekstrak.
+    Jika file_to_extract diberikan, hanya file tersebut yang akan diekstrak.
     
     Parameters:
     zip_file_path (str): Path ke file .zip

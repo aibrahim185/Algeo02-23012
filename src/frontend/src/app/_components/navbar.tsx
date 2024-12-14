@@ -11,43 +11,27 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/app/_components/ui/navigation-menu";
+import { Button } from "./ui/button";
 
 export function Navbar() {
   return (
     <NavigationMenu className="w-full top-6 sticky h-fit m-6 gap-12">
-      <Image
-        src={"/ambalabu-text.png"}
-        alt={"ambalabu"}
-        width={100}
-        height={100}
-        className="h-9 w-fit"
-      />
-
       <NavigationMenuList className="gap-5">
         <NavigationMenuItem>
           <Link href="/" legacyBehavior passHref>
             <NavigationMenuLink
               className={`${navigationMenuTriggerStyle()} bg-black`}
+              asChild
             >
-              Home
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link href="/album" legacyBehavior passHref>
-            <NavigationMenuLink
-              className={`${navigationMenuTriggerStyle()} bg-black`}
-            >
-              Album
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link href="/music" legacyBehavior passHref>
-            <NavigationMenuLink
-              className={`${navigationMenuTriggerStyle()} bg-black`}
-            >
-              Music
+              <Button variant={"ghost"} className="bg-transparent">
+                <Image
+                  src={"/ambalabu-text.png"}
+                  alt={"ambalabu"}
+                  width={100}
+                  height={100}
+                  className="h-9 w-fit"
+                />
+              </Button>
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
