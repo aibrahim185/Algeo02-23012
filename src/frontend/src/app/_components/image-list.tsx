@@ -25,12 +25,11 @@ interface MediaListProps {
 }
 
 export default function MediaList({ dataType }: MediaListProps) {
-  const { refreshKey } = useDataContext();
+  const { refreshKey, fetchUrl } = useDataContext();
   const [items, setItems] = useState<DataItem[]>([]);
   const [page, setPage] = useState(1);
   const [size] = useState(28);
   const [total, setTotal] = useState(0);
-  const fetchUrl = "uploads";
 
   useEffect(() => {
     const fetchData = async () => {

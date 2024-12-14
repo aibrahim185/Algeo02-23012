@@ -11,7 +11,7 @@ import { useDataContext } from "../_context/DataContext";
 
 export default function Menu() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const { refreshKey, setRefreshKey } = useDataContext();
+  const { refreshKey, setRefreshKey, setFetchUrl } = useDataContext();
 
   const handleChangeAndSubmit = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -37,6 +37,9 @@ export default function Menu() {
           toast("File Submitted Successfully!", {
             description: "Please continue to submit the data set.",
           });
+
+          setRefreshKey(refreshKey + 1);
+          setFetchUrl("get_similar_images");
         } else {
           console.log("ga aman");
           toast("Something Went Wrong!", {
@@ -45,6 +48,44 @@ export default function Menu() {
         }
       } catch {
         console.log("ga aman 2");
+        toast("Something Went Wrong!", {
+          description: "Please try again later",
+        });
+      }
+    }
+  };
+
+  const handlePictureUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (e.target.files) {
+      const file = e.target.files[0];
+      setSelectedFiles([file]);
+
+      const formData = new FormData();
+      formData.append("query_image", file);
+
+      try {
+        const endPoint = "api/find_similar_images";
+        const res = await fetch(endPoint, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log(data);
+
+          setRefreshKey(refreshKey + 1);
+          setFetchUrl("get_similar_images");
+        } else {
+          console.log("Upload failed");
+          toast("Something Went Wrong!", {
+            description: "Please try again later",
+          });
+        }
+      } catch {
+        console.log("Error in upload");
         toast("Something Went Wrong!", {
           description: "Please try again later",
         });
@@ -76,6 +117,7 @@ export default function Menu() {
         });
 
         setRefreshKey(refreshKey + 1);
+        setFetchUrl("get_similar_images");
       } else {
         console.log("ga aman");
         toast("Something Went Wrong!", {
@@ -142,12 +184,22 @@ export default function Menu() {
           >
             Audio
           </Button>
-          <Button
-            className="w-full text-red-600 border-red-900 hover:bg-red-900 border-2"
-            variant={"ghost"}
-          >
-            Picture
-          </Button>
+          <div className="relative border-2 border-red-900 hover:bg-red-900 rounded-lg">
+            <Input
+              type="file"
+              id="file-input"
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={handlePictureUpload}
+              accept=".jpg,.jpeg,.png"
+            />
+            <Button
+              type="button"
+              className="w-full text-red-600"
+              variant={"ghost"}
+            >
+              Picture
+            </Button>
+          </div>
         </div>
       </div>
     </div>

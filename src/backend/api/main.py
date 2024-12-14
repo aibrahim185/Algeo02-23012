@@ -11,6 +11,7 @@ from typing import List
 import time
 from io import BytesIO
 from api.ImagePCA import ImagePCA
+import copy
 
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
 
@@ -41,7 +42,11 @@ def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
     audio_files = [f for f in os.listdir(audio_dir) if f.endswith((".mid"))]
     
     files = [
-        {"id": idx, "title": file, "image": f"/api/uploads/images/{file}"}
+        {
+            "id": idx, 
+            "title": file, 
+            "image": f"/api/uploads/images/{file}",    
+        }
         for idx, file in enumerate(image_files + audio_files)
     ]
     
@@ -83,11 +88,15 @@ async def create_upload_file(file_uploads: list[UploadFile]):
         
     return {"filenames": [f.filename for f in file_uploads]}
 
-@app.get("/find_similar_images")
-async def find_similar_images(query_image: UploadFile, k: int = Query(5, gt=0)):
+similar_images_cache = []
+
+@app.post("/find_similar_images", response_model=PaginatedResponse)
+async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0)):
     # Load uploaded images for PCA
     image_dir = os.path.join(UPLOAD_DIR, "images")
     images = ImagePCA.loadData(image_dir)
+
+    image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
 
     # Preprocess images
     width = 200
@@ -103,22 +112,51 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(5, gt=0)):
         query_img = pca.preprocessQueryImage(img, width, height)
         
     # Find similar images
-    similar_images = pca.findSimilarImages(query_img, prep_images, k)
+    similar_images = pca.findSimilarImages(query_img, prep_images, len(image_files))
+    similar_images_cache[:] = copy.deepcopy(similar_images)
+    
+    print(similar_images[:5])
+    print(similar_images_cache[:5])
     
     response_items = []
     for idx, dist, sim in similar_images:
-        img_path = os.path.join(image_dir, f"{idx}.jpg")
         response_items.append({
             "id": idx,
-            "image": f"/uploads/images/{os.path.basename(img_path)}",
-            "similarity_percentage": sim * 100
+            "title": sim * 100,
+            "image": f"/api/uploads/images/{image_files[idx]}",
         })
     
     return PaginatedResponse(
         items=response_items,
         total=len(similar_images),
         page=1,
-        size=k
+        size=k,
+    )
+    
+@app.get("/get_similar_images", response_model=PaginatedResponse)
+async def get_similar_images(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
+    image_dir = os.path.join(UPLOAD_DIR, "images")
+
+    image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
+
+    total = len(similar_images_cache)
+    
+    start = (page - 1) * size
+    end = start + size
+    items = [
+        {
+            "id": idx,
+            "title": f"{round(sim * 100, 3)}%",
+            "image": f"/api/uploads/images/{image_files[idx]}",
+        }
+        for idx, dist, sim in similar_images_cache[start:end]
+    ]
+
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        size=size,
     )
 
 def delete_data():
