@@ -3,9 +3,10 @@ import dynamic from "next/dynamic";
 
 const MidiPlayer = dynamic(() => import("react-midi-player"), { ssr: false });
 
-const MidiPlayerComponent: React.FC = () => {
+const MidiPlayerComponent: React.FC<{ midiFilePath: string }> = ({
+  midiFilePath,
+}) => {
   const midiPlayerRef = useRef<HTMLDivElement>(null);
-  const midiFilePath = "/midi/test1.mid";
 
   useEffect(() => {
     if (midiPlayerRef.current) {

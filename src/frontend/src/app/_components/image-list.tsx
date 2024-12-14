@@ -112,7 +112,7 @@ export default function MediaList({ dataType }: MediaListProps) {
           )}
 
           <h1 className="font-bold m-1 max-w-[92px] overflow-hidden whitespace-nowrap">
-            <span className="marquee inline-block">{d.title}</span>
+            <span className="inline-block">{d.title}</span>
           </h1>
         </div>
       ))}

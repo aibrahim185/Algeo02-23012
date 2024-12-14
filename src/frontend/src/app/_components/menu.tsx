@@ -11,7 +11,16 @@ import { useDataContext } from "../_context/DataContext";
 
 export default function Menu() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const { refreshKey, setRefreshKey, setFetchUrl } = useDataContext();
+  const {
+    refreshKey,
+    setRefreshKey,
+    setFetchUrl,
+    imageFilePath,
+    setImageFilePath,
+    midiFilePath,
+    title,
+    setTitle,
+  } = useDataContext();
 
   const handleChangeAndSubmit = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -38,8 +47,10 @@ export default function Menu() {
             description: "Please continue to submit the data set.",
           });
 
+          setImageFilePath("/favicon.ico");
+          setTitle("Ambalabu");
           setRefreshKey(refreshKey + 1);
-          setFetchUrl("get_similar_images");
+          setFetchUrl("uploads");
         } else {
           console.log("ga aman");
           toast("Something Went Wrong!", {
@@ -76,8 +87,12 @@ export default function Menu() {
           const data = await res.json();
           console.log(data);
 
+          setImageFilePath(`/api/uploads/query/${file.name}`);
+          setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_similar_images");
+
+          toast("Image Submitted Successfully!");
         } else {
           console.log("Upload failed");
           toast("Something Went Wrong!", {
@@ -116,8 +131,10 @@ export default function Menu() {
           description: "Please continue to submit the data set.",
         });
 
+        setImageFilePath("/favicon.ico");
+        setTitle("Ambalabu");
         setRefreshKey(refreshKey + 1);
-        setFetchUrl("get_similar_images");
+        setFetchUrl("uploads");
       } else {
         console.log("ga aman");
         toast("Something Went Wrong!", {
@@ -137,18 +154,17 @@ export default function Menu() {
       <div className="h-full p-6 rounded-3xl flex flex-col justify-between gap-6">
         <div className="bg-black p-3 rounded-lg flex flex-col items-center">
           <Image
-            src={"/favicon.ico"}
-            alt={""}
-            width={100}
-            height={100}
-            className="rounded-lg w-full max-w-[200px] mb-3"
+            src={imageFilePath}
+            alt={title}
+            width={200}
+            height={200}
+            className="rounded-lg w-full size-[270px] mb-3"
           />
-          <MidiPlayerComponent />
-          <div className="text-center">
-            <h1 className="text-3xl font-extrabold">Judul</h1>
-            <p className="truncate">Audio</p>
-            <p className="truncate">Picture</p>
-            <p className="truncate">Mapper</p>
+          <MidiPlayerComponent midiFilePath={midiFilePath} />
+          <div className="text-center overflow-hidden">
+            <h1 className="text-3xl font-extrabold overflow-hidden max-w-[270px]">
+              {title}
+            </h1>
           </div>
         </div>
         <div

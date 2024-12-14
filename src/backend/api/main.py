@@ -68,9 +68,11 @@ async def create_upload_file(file_uploads: list[UploadFile]):
     
     audio_dir = os.path.join(UPLOAD_DIR, "audio")
     image_dir = os.path.join(UPLOAD_DIR, "images")
+    query_dir = os.path.join(UPLOAD_DIR, "query")
     
     os.makedirs(audio_dir, exist_ok=True)
     os.makedirs(image_dir, exist_ok=True)
+    os.makedirs(query_dir, exist_ok=True)
     
     for file in file_uploads:
         file_path = os.path.join(UPLOAD_DIR, file.filename)
@@ -92,6 +94,20 @@ similar_images_cache = []
 
 @app.post("/find_similar_images", response_model=PaginatedResponse)
 async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0)):
+    query_dir = os.path.join(UPLOAD_DIR, "query")
+    
+    # Clear the contents of the query directory
+    for file in os.listdir(query_dir):
+        file_path = os.path.join(query_dir, file)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+    
+    # Save the uploaded query image
+    query_image_path = os.path.join(query_dir, query_image.filename)
+    content = await query_image.read()
+    with open(query_image_path, "wb") as f:
+        f.write(content)
+    
     # Load uploaded images for PCA
     image_dir = os.path.join(UPLOAD_DIR, "images")
     images = ImagePCA.loadData(image_dir)
@@ -108,7 +124,7 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
     pca.fit(prep_images, mean_array)
 
     # Process the query image
-    with Image.open(BytesIO(await query_image.read())) as img:
+    with Image.open(BytesIO(content)) as img:
         query_img = pca.preprocessQueryImage(img, width, height)
         
     # Find similar images
