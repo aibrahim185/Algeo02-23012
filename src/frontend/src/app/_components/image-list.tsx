@@ -11,6 +11,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "./ui/pagination";
+import { useDataContext } from "../_context/DataContext";
 
 interface DataItem {
   id: number;
@@ -24,6 +25,7 @@ interface MediaListProps {
 }
 
 export default function MediaList({ dataType }: MediaListProps) {
+  const { refreshKey } = useDataContext();
   const [items, setItems] = useState<DataItem[]>([]);
   const [page, setPage] = useState(1);
   const [size] = useState(28);
@@ -47,7 +49,7 @@ export default function MediaList({ dataType }: MediaListProps) {
     };
 
     fetchData();
-  }, [page, size, fetchUrl]);
+  }, [page, size, fetchUrl, refreshKey]);
 
   const totalPages = Math.ceil(total / size);
 

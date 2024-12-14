@@ -7,9 +7,11 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import MidiPlayerComponent from "./midi-player";
+import { useDataContext } from "../_context/DataContext";
 
 export default function Menu() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const { refreshKey, setRefreshKey } = useDataContext();
 
   const handleChangeAndSubmit = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -72,6 +74,8 @@ export default function Menu() {
         toast("File Submitted Successfully!", {
           description: "Please continue to submit the data set.",
         });
+
+        setRefreshKey(refreshKey + 1);
       } else {
         console.log("ga aman");
         toast("Something Went Wrong!", {
