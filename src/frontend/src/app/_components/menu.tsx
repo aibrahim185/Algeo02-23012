@@ -8,6 +8,7 @@ import { Input } from "./ui/input";
 import { toast } from "sonner";
 import MidiPlayerComponent from "./midi-player";
 import { useDataContext } from "../_context/DataContext";
+import AudioRecorder from "./audio-recorder";
 
 export default function Menu() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -161,6 +162,7 @@ export default function Menu() {
             className="rounded-lg w-full size-[270px] mb-3"
           />
           <MidiPlayerComponent midiFilePath={midiFilePath} />
+          <AudioRecorder />
           <div className="text-center overflow-hidden">
             <h1 className="text-3xl font-extrabold overflow-hidden max-w-[270px]">
               {title}
