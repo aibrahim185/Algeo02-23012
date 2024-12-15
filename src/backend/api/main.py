@@ -36,7 +36,7 @@ class PaginatedResponse(BaseModel):
     page: int
     size: int
 
-@app.get("/uploads", response_model=PaginatedResponse)
+@app.get("/get_uploads", response_model=PaginatedResponse)
 def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
     audio_dir = os.path.join(UPLOAD_DIR, "audio")
     image_dir = os.path.join(UPLOAD_DIR, "images")

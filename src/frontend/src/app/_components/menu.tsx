@@ -49,7 +49,7 @@ export default function Menu() {
           setImageFilePath("/favicon.ico");
           setTitle("Ambalabu");
           setRefreshKey(refreshKey + 1);
-          setFetchUrl("uploads");
+          setFetchUrl("get_uploads");
         } else {
           console.log("ga aman");
           toast("Something Went Wrong!", {
@@ -76,7 +76,7 @@ export default function Menu() {
         setImageFilePath("/favicon.ico");
         setTitle("Ambalabu");
         setRefreshKey(refreshKey + 1);
-        setFetchUrl("uploads");
+        setFetchUrl("get_uploads");
         setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
       } else {
         toast("Error deleting the data. 1");
@@ -204,7 +204,7 @@ export default function Menu() {
         setImageFilePath("/favicon.ico");
         setTitle("Ambalabu");
         setRefreshKey(refreshKey + 1);
-        setFetchUrl("uploads");
+        setFetchUrl("get_uploads");
       } else {
         console.log("ga aman");
         toast("Something Went Wrong!", {

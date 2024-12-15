@@ -19,7 +19,7 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [refreshKey, setRefreshKey] = useState(0);
-  const [fetchUrl, setFetchUrl] = useState("uploads");
+  const [fetchUrl, setFetchUrl] = useState("get_uploads");
   const [midiFilePath, setMidiFilePath] = useState(
     "/midi/Never_Gonna_Give_You_Up.2.mid"
   );
