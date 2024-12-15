@@ -18,6 +18,7 @@ export default function Menu() {
     imageFilePath,
     setImageFilePath,
     midiFilePath,
+    setMidiFilePath,
     title,
     setTitle,
   } = useDataContext();
@@ -89,8 +90,9 @@ export default function Menu() {
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
+          setMidiFilePath("/midi/Never_Gonna_Give_You_Up.2.mid");
 
-          toast("Image Submitted Successfully!");
+          toast("Image query completed!");
         } else {
           console.log("Upload failed");
           toast("Something Went Wrong!", {
@@ -138,8 +140,9 @@ export default function Menu() {
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
+          setMidiFilePath("/api/uploads/query/" + file.name);
 
-          toast("Audio file uploaded successfully!");
+          toast("Audio query completed!");
         } else {
           console.log("Upload failed");
           toast("Something Went Wrong!", {
