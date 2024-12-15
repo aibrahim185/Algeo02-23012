@@ -3,6 +3,7 @@ import numpy as np
 import scipy.sparse.linalg as splg
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 
 class ImagePCA:
@@ -65,22 +66,41 @@ class ImagePCA:
         return images
     
     @staticmethod
-    def loadAndPreprocessData(path, width=100, height=100):
+    def loadAndPreprocessData(path, width=100, height=100, batch_size=10):
         """
         Returns:
         A list of images as numpy arrays
         """
         start = time.time()
         images = []
-        for filename in os.listdir(path):
-            if filename.endswith('.jpeg') or filename.endswith('.jpg') or filename.endswith('.png'):
-                with Image.open(os.path.join(path, filename)) as img:
-                    img_prep = ImagePCA.preprocessImage(img, width, height)
-                    images.append(img_prep)
+        image_paths = []
+
+        # Collect all image paths
+        for root, dirs, files in os.walk(path):
+            for filename in files:
+                if filename.endswith('.jpeg') or filename.endswith('.jpg') or filename.endswith('.png'):
+                    image_paths.append(os.path.join(root, filename))
+
+        # Batch process images using multithreading
+        with ThreadPoolExecutor() as executor:
+            for i in range(0, len(image_paths), batch_size):
+                batch_paths = image_paths[i:i + batch_size]
+                batch_images = list(executor.map(ImagePCA.processImagePath, batch_paths, [width]*len(batch_paths), [height]*len(batch_paths)))
+                images.extend(batch_images)
+
         std_images, mean_array = ImagePCA.stadardizeGrayImages(images)
         end = time.time()
         print("Time to load and preprocess images: ", end - start)
         return (std_images, mean_array)
+    
+    @staticmethod
+    def processImagePath(image_path, width, height):
+        """
+        Process a single image path by loading and preprocessing the image.
+        """
+        with Image.open(image_path) as img:
+            img_prep = ImagePCA.preprocessImage(img, width, height)
+        return img_prep
     
     @staticmethod
     def saveData(images, path):
