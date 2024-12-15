@@ -8,7 +8,6 @@ import { Input } from "./ui/input";
 import { toast } from "sonner";
 import MidiPlayerComponent from "./midi-player";
 import { useDataContext } from "../_context/DataContext";
-import AudioRecorder from "./audio-recorder";
 
 export default function Menu() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -44,9 +43,7 @@ export default function Menu() {
 
         if (res.ok) {
           console.log("aman");
-          toast("File Submitted Successfully!", {
-            description: "Please continue to submit the data set.",
-          });
+          toast("File Submitted Successfully!");
 
           setImageFilePath("/favicon.ico");
           setTitle("Ambalabu");
@@ -91,7 +88,7 @@ export default function Menu() {
           setImageFilePath(`/api/uploads/query/${file.name}`);
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
-          setFetchUrl("get_similar_images");
+          setFetchUrl("get_cache");
 
           toast("Image Submitted Successfully!");
         } else {
@@ -115,7 +112,7 @@ export default function Menu() {
       setSelectedFiles([file]);
 
       const formData = new FormData();
-      formData.append("query_audio", file);
+      formData.append("query_midi", file);
 
       try {
         const endPoint = "api/find_similar_midi";
@@ -131,9 +128,9 @@ export default function Menu() {
           setImageFilePath(`/placeholder.ico`);
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
-          setFetchUrl("get_similar_midi");
+          setFetchUrl("get_cache");
 
-          toast("Image Submitted Successfully!");
+          toast("Audio file uploaded successfully!");
         } else {
           console.log("Upload failed");
           toast("Something Went Wrong!", {
@@ -168,9 +165,7 @@ export default function Menu() {
 
       if (res.ok) {
         console.log("aman");
-        toast("File Submitted Successfully!", {
-          description: "Please continue to submit the data set.",
-        });
+        toast("File Submitted Successfully!");
 
         setImageFilePath("/favicon.ico");
         setTitle("Ambalabu");
@@ -242,7 +237,7 @@ export default function Menu() {
               id="file-input"
               className="absolute inset-0 opacity-0 cursor-pointer"
               onChange={handleAudioUpload}
-              accept=".mid, .wav"
+              accept=".mid"
             />
             <Button
               type="button"

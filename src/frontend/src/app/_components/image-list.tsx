@@ -12,6 +12,9 @@ import {
   PaginationPrevious,
 } from "./ui/pagination";
 import { useDataContext } from "../_context/DataContext";
+import { Button } from "./ui/button";
+import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "./ui/dialog";
+import MidiPlayerComponent from "./midi-player";
 
 interface DataItem {
   id: number;
@@ -20,11 +23,7 @@ interface DataItem {
   audio?: string;
 }
 
-interface MediaListProps {
-  dataType: "image" | "music";
-}
-
-export default function MediaList({ dataType }: MediaListProps) {
+export default function MediaList() {
   const { refreshKey, fetchUrl } = useDataContext();
   const [items, setItems] = useState<DataItem[]>([]);
   const [page, setPage] = useState(1);
@@ -92,29 +91,39 @@ export default function MediaList({ dataType }: MediaListProps) {
   return (
     <div className="flex flex-wrap gap-6 justify-items-center overflow-hidden max-w-7xl">
       {items.map((d) => (
-        <div
-          key={d.id}
-          className="h-fit overflow-hidden p-2 pb-0 bg-black rounded-xl flex flex-col text-center"
-        >
-          {dataType === "image" ? (
+        <Dialog key={d.id}>
+          <DialogTrigger asChild>
+            <Button
+              variant={"ghost"}
+              className="h-fit overflow-hidden p-2 pb-0 bg-black rounded-xl flex flex-col text-center"
+            >
+              <Image
+                src={d.image || "/placeholder.ico"}
+                alt={d.title}
+                width={100}
+                height={100}
+                className="rounded-lg"
+              />
+
+              <h1 className="font-bold m-1 max-w-[92px] overflow-hidden whitespace-nowrap">
+                <span className="inline-block">{d.title}</span>
+              </h1>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-black p-6 rounded-lg flex flex-col items-center w-fit border-red-600">
+            <DialogTitle className="truncate max-w-[270px]">
+              {d.title}
+            </DialogTitle>
             <Image
               src={d.image || "/placeholder.ico"}
               alt={d.title}
-              width={100}
-              height={100}
-              className="rounded-lg"
+              width={200}
+              height={200}
+              className="rounded-lg w-full size-[270px] mb-3"
             />
-          ) : (
-            <audio controls>
-              <source src={d.audio || "/placeholder.mp3"} />
-              Your browser does not support the audio element.
-            </audio>
-          )}
-
-          <h1 className="font-bold m-1 max-w-[92px] overflow-hidden whitespace-nowrap">
-            <span className="inline-block">{d.title}</span>
-          </h1>
-        </div>
+            <MidiPlayerComponent midiFilePath={d.audio || ""} />
+          </DialogContent>
+        </Dialog>
       ))}
 
       <div className="w-full">

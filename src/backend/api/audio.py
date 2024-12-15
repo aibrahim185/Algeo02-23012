@@ -1,7 +1,7 @@
 import os
 import time
 import numpy as np
-from mido import MidiFile, MidiTrack, Message
+from mido import MidiFile
 from multiprocessing import Pool
 
 # Process MIDI to extract note data
@@ -10,7 +10,6 @@ def process_midi(midi_path):
     stride_beats = 8
 
     try:
-        # Attempt to load the MIDI file
         midi = MidiFile(midi_path)
         ticks_per_beat = midi.ticks_per_beat
 
@@ -18,31 +17,27 @@ def process_midi(midi_path):
         for track in midi.tracks:
             time_elapsed = 0
             for msg in track:
-                try:
-                    if msg.type == 'note_on' and msg.velocity > 0:
-                        notes.append((msg.note, time_elapsed / ticks_per_beat))
-                    time_elapsed += msg.time
-                except ValueError as e:
-                    # Skip invalid messages
-                    print(f"Skipping invalid message in {midi_path}: {e}")
-                    continue
+                if msg.type == 'note_on' and msg.velocity > 0:
+                    notes.append((msg.note, time_elapsed / ticks_per_beat))
+                time_elapsed += msg.time
 
         if not notes:
-            print(f"File {midi_path} has no valid notes.")
             return []
 
-        # Convert to numpy arrays for efficient processing
-        pitches = np.array([note[0] for note in notes])
-        beat_durations = np.diff([note[1] for note in notes], prepend=0)
+        notes = np.array(notes)
+        pitches = notes[:, 0]
+        beat_durations = np.diff(notes[:, 1], prepend=0)
         note_representation = np.column_stack((pitches, beat_durations))
 
-        # Sliding window
+        # Precompute cumulative sum for window extraction
+        cumsum_beat_durations = np.cumsum(beat_durations)
+        total_beats = np.sum(beat_durations)
+
         windows = []
         start_beat = 0
-        total_beats = np.sum(beat_durations)
         while start_beat < total_beats:
-            mask = (note_representation[:, 1].cumsum() > start_beat) & \
-                   (note_representation[:, 1].cumsum() <= start_beat + window_size_beats)
+            mask = (cumsum_beat_durations > start_beat) & \
+                   (cumsum_beat_durations <= start_beat + window_size_beats)
             current_window = note_representation[mask]
             if current_window.size > 0:
                 windows.append(current_window)
@@ -50,11 +45,10 @@ def process_midi(midi_path):
 
         return windows
 
-    except ValueError as e:
-        print(f"File {midi_path} is corrupt or malformed: {e}")
     except Exception as e:
-        print(f"Unexpected error processing file {midi_path}: {e}")
-    return []
+        # print(f"Error processing {midi_path}: {e}")
+        return []
+
 
 # Feature extraction
 def extract_features(pitches):
@@ -109,14 +103,12 @@ def process_single_midi(file_data):
     return midi_file, features
 
 # Main function
-def get_similar_audio(target_midi_path, threshold=0):
-    search_directory = os.path.join(os.path.dirname(__file__), "uploads/audio")
+def get_similar_audio(target_midi_path, search_directory):
     start_time = time.time()
 
     # Process target MIDI file
     target_windows = process_midi(target_midi_path)
     if not target_windows:
-        print(f"File target {target_midi_path} tidak memiliki data nada.")
         return []
 
     target_features = [extract_features(window[:, 0]) for window in target_windows]
@@ -142,10 +134,8 @@ def get_similar_audio(target_midi_path, threshold=0):
         trimmed_db_features = db_features[:min_windows]
 
         similarity = compute_similarity_batch(trimmed_target_features, trimmed_db_features) * 100
-        # print(f"File: {midi_file} - Similarity: {similarity:.2f}%")
 
-        if similarity >= threshold:
-            similar_songs.append((midi_file, similarity))
+        similar_songs.append((midi_file, similarity))
 
     similar_songs.sort(key=lambda x: x[1], reverse=True)
 

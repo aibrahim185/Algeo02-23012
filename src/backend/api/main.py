@@ -49,6 +49,7 @@ def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
             "id": idx, 
             "title": file, 
             "image": f"/api/uploads/images/{file}" if file in image_files else "/placeholder.ico",    
+            "audio": f"/api/uploads/audio/{file}" if file in audio_files else None,
         }
         for idx, file in enumerate(image_files + audio_files)
     ]
@@ -113,7 +114,7 @@ async def create_upload_file(file_uploads: List[UploadFile]):
 
     return {"filenames": filenames}
 
-cache = []
+cache = []  # Unified cache for both image and MIDI results
 
 @app.post("/find_similar_images", response_model=PaginatedResponse)
 async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0)):
@@ -152,18 +153,21 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
         
     # Find similar images
     similar_images = pca.findSimilarImages(query_img, prep_images, len(image_files))
-    cache[:] = copy.deepcopy(similar_images)
+
+    # Update cache with image results
+    cache[:] = [
+        {"type": "image", "idx": idx, "sim": sim, "file": image_files[idx]}
+        for idx, dist, sim in similar_images
+    ]
     
-    print(similar_images[:5])
-    print(cache[:5])
-    
-    response_items = []
-    for idx, dist, sim in similar_images:
-        response_items.append({
+    response_items = [
+        {
             "id": idx,
-            "title": sim * 100,
-            "image": f"/api/uploads/images/{image_files[idx]}",
-        })
+            "title": f"{sim * 100:.2f}%",
+            "image": f"/api/uploads/images/{image_files[idx]}"
+        }
+        for idx, dist, sim in similar_images
+    ]
     
     return PaginatedResponse(
         items=response_items,
@@ -171,42 +175,12 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
         page=1,
         size=k,
     )
-    
-@app.get("/get_similar_images", response_model=PaginatedResponse)
-async def get_similar_images(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
-    image_dir = os.path.join(UPLOAD_DIR, "images")
 
-    image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
-
-    total = len(cache)
-    
-    start = (page - 1) * size
-    end = start + size
-    items = [
-        {
-            "id": idx,
-            "title": f"{round(sim * 100, 3)}%",
-            "image": f"/api/uploads/images/{image_files[idx]}",
-        }
-        for idx, dist, sim in cache[start:end]
-    ]
-
-    return PaginatedResponse(
-        items=items,
-        total=total,
-        page=page,
-        size=size,
-    )
-    
 @app.post("/find_similar_midi")
 async def find_similar_midi(query_midi: UploadFile):
-    """
-    Endpoint untuk mencari file MIDI yang mirip dengan file MIDI yang diunggah.
-    - query_midi: File MIDI yang diunggah untuk pencarian
-    - threshold: Batas minimal kesamaan untuk menyaring hasil pencarian
-    """
-
     query_dir = os.path.join(UPLOAD_DIR, "query")
+    search_directory = os.path.join(os.path.dirname(__file__), "uploads/audio")
+
     os.makedirs(query_dir, exist_ok=True)
 
     query_midi_path = os.path.join(query_dir, query_midi.filename)
@@ -214,16 +188,23 @@ async def find_similar_midi(query_midi: UploadFile):
         content = await query_midi.read()
         f.write(content)
 
-    similar_midi = get_similar_audio(query_midi_path, threshold=0)
+    similar_midi = get_similar_audio(query_midi_path, search_directory)
 
-    response_items = []
-    for midi_file, similarity in similar_midi:
-        response_items.append({
+    # Update cache with MIDI results
+    cache[:] = [
+        {"type": "midi", "file": midi_file, "sim": similarity}
+        for midi_file, similarity in similar_midi
+    ]
+
+    response_items = [
+        {
             "id": midi_file,
             "title": f"{round(similarity, 2)}%",
-            "midi_file": f"/uploads/audio/{midi_file}",
+            "midi_file": f"/api/uploads/audio/{midi_file}",
             "image": "/placeholder.ico",
-        })
+        }
+        for midi_file, similarity in similar_midi
+    ]
 
     return {
         "items": response_items[:5],
@@ -231,6 +212,37 @@ async def find_similar_midi(query_midi: UploadFile):
         "page": 1,
         "size": len(similar_midi),
     }
+
+@app.get("/get_cache", response_model=PaginatedResponse)
+async def get_cache(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
+    total = len(cache)
+    
+    start = (page - 1) * size
+    end = start + size
+    items = []
+    
+    for entry in cache[start:end]:
+        if entry["type"] == "image":
+            items.append({
+                "id": entry["idx"],
+                "title": f"{round(entry['sim'] * 100, 3)}%",
+                "image": f"/api/uploads/images/{entry['file']}"
+            })
+        elif entry["type"] == "midi":
+            items.append({
+                "id": entry["file"],
+                "title": f"{round(entry['sim'], 2)}%",
+                "midi_file": f"/uploads/audio/{entry['file']}",
+                "image": "/placeholder.ico",
+            })
+    
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        size=size,
+    )
+
 
 @app.post("/upload_audio_and_convert")
 async def upload_audio_and_convert(file: UploadFile):
