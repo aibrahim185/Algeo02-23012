@@ -157,7 +157,7 @@ export default function MediaList() {
       </div>
 
       <div className="w-full font-bloody">
-        <Pagination className="w-fit bg-black rounded-xl flex items-center">
+        <Pagination className="w-fit bg-black rounded-xl flex items-center border-2 border-red-900">
           <PaginationContent>
             {page > 1 && (
               <PaginationItem>
