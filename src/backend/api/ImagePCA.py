@@ -37,7 +37,8 @@ class ImagePCA:
     similar_images = pca.findSimilarImages(query_img, prep_images, 5)
     print(similar_images)
     
-    # Output: List[(index, euclidean_distance, similarity percentage)] of 5 most similar images to the query image
+    # Output: List[(index, euclidean_distance, similarity)] of 5 most similar images to the query image
+    # Similarity range: 0 to 1
     ```
 
     Catatan:
