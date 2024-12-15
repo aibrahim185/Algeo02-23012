@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import {
   Pagination,
   PaginationContent,
@@ -31,12 +31,16 @@ export default function MediaList() {
   const [page, setPage] = useState(1);
   const [size] = useState(28);
   const [total, setTotal] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(`api/${fetchUrl}?page=${page}&size=${size}`, {
-        method: "GET",
-      });
+      const res = await fetch(
+        `api/${fetchUrl}?page=${page}&size=${size}&search=${searchTerm}`,
+        {
+          method: "GET",
+        }
+      );
       const data = await res.json();
 
       if (data && Array.isArray(data.items)) {
@@ -49,9 +53,15 @@ export default function MediaList() {
     };
 
     fetchData();
-  }, [page, size, fetchUrl, refreshKey]);
+  }, [page, size, fetchUrl, refreshKey, searchTerm]);
 
   const totalPages = Math.ceil(total / size);
+
+  const handleSearchChange = (e: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setSearchTerm(e.target.value);
+  };
 
   const handleNext = () => {
     if (page < totalPages) setPage(page + 1);
@@ -97,6 +107,8 @@ export default function MediaList() {
         <Input
           className="border-none focus-visible:ring-0 placeholder:text-red-900 font-deadfall"
           placeholder="Search "
+          value={searchTerm}
+          onChange={handleSearchChange}
         />
       </div>
       <div className="flex flex-wrap gap-6 justify-center items-center overflow-hidden max-w-7xl px-7">

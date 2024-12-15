@@ -37,12 +37,24 @@ class PaginatedResponse(BaseModel):
     size: int
 
 @app.get("/get_uploads", response_model=PaginatedResponse)
-def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
+def get_uploaded_files(
+        page: int = Query(1, gt=0), 
+        size: int = Query(10, gt=0),
+        search: str = Query("")
+    ):
     audio_dir = os.path.join(UPLOAD_DIR, "audio")
     image_dir = os.path.join(UPLOAD_DIR, "images")
     
     image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
     audio_files = [f for f in os.listdir(audio_dir) if f.endswith((".mid"))]
+    
+    if search:
+        filtered_files = [
+            file for file in image_files + audio_files
+            if search.lower() in file.lower()
+        ]
+    else:
+        filtered_files = image_files + audio_files
     
     files = [
         {
@@ -51,13 +63,13 @@ def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
             "image": f"/api/uploads/images/{file}" if file in image_files else "/placeholder.ico",    
             "audio": f"/api/uploads/audio/{file}" if file in audio_files else None,
         }
-        for idx, file in enumerate(image_files + audio_files)
+        for file in filtered_files
     ]
     
     start = (page - 1) * size
     end = start + size
     items = files[start:end]
-    total = len(files)
+    total = len(filtered_files)
     
     return {
         "items": items,
@@ -212,14 +224,25 @@ async def find_similar_midi(query_audio: UploadFile):
     }
 
 @app.get("/get_cache", response_model=PaginatedResponse)
-async def get_cache(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
-    total = len(cache)
+async def get_cache(
+        page: int = Query(1, gt=0), 
+        size: int = Query(10, gt=0),
+        search: str = Query("")
+    ):
+    
+    if search:
+        filtered_cache = [
+            entry for entry in cache
+            if search.lower() in entry["file"].lower()
+        ]
+    else:
+        filtered_cache = cache
     
     start = (page - 1) * size
     end = start + size
     items = []
     
-    for entry in cache[start:end]:
+    for entry in filtered_cache[start:end]:
         if entry["type"] == "image":
             items.append({
                 "id": entry["idx"],
@@ -236,7 +259,7 @@ async def get_cache(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
     
     return PaginatedResponse(
         items=items,
-        total=total,
+        total=len(filtered_cache),
         page=page,
         size=size,
     )
