@@ -19,7 +19,7 @@ export default function RootLayout({
       <DataProvider>
         <Menu />
 
-        <div className="flex flex-col">{children}</div>
+        <div className="flex flex-col py-12">{children}</div>
       </DataProvider>
     </div>
   );
