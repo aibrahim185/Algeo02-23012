@@ -1,4 +1,5 @@
 import json
+import time
 from fastapi import FastAPI, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -160,7 +161,7 @@ async def create_upload_file(file_uploads: List[UploadFile]):
 
 cache = []  # Unified cache for both image and MIDI results
 
-@app.post("/find_similar_images", response_model=PaginatedResponse)
+@app.post("/find_similar_images")
 async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0)):
     query_dir = os.path.join(UPLOAD_DIR, "query")
     
@@ -188,15 +189,21 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
     prep_images, mean_array = ImagePCA.preprocessImages(images, width, height)
 
     # Initialize and fit the PCA model
+    fit_start = time.time()
     pca = ImagePCA()
     pca.fit(prep_images, mean_array)
+    fit_end = time.time()
 
     # Process the query image
+    preprocess_start = time.time()
     with Image.open(BytesIO(content)) as img:
         query_img = pca.preprocessQueryImage(img, width, height)
+    preprocess_end = time.time()
         
     # Find similar images
+    query_start = time.time()
     similar_images = pca.findSimilarImages(query_img, prep_images, len(image_files))
+    query_end = time.time()
 
     # Update cache with image results
     cache[:] = [
@@ -210,21 +217,11 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
         for idx, dist, sim in similar_images
     ]
     
-    response_items = [
-        {
-            "image": image_files[idx],
-            "sim": sim,
-            "dist": dist,
-        }
-        for idx, dist, sim in similar_images
-    ]
-    
-    return PaginatedResponse(
-        items=response_items,
-        total=len(similar_images),
-        page=1,
-        size=k,
-    )
+    return {
+        "query": f"{(query_end - query_start) * 1000:.2f}",
+        "preprocess": f"{(preprocess_end - preprocess_start) * 1000:.2f}",
+        "fit": f"{(fit_end - fit_start) * 1000:.2f}",
+    }
 
 @app.post("/find_similar_audio")
 async def find_similar_audio(query_audio: UploadFile):
@@ -238,7 +235,9 @@ async def find_similar_audio(query_audio: UploadFile):
         content = await query_audio.read()
         f.write(content)
 
+    time_start = time.time()
     similar_midi = get_similar_audio(query_audio_path, search_directory)
+    time_end = time.time()
 
     # Update cache with MIDI results
     cache[:] = [
@@ -252,20 +251,7 @@ async def find_similar_audio(query_audio: UploadFile):
         for midi_file, similarity in similar_midi
     ]
 
-    response_items = [
-        {
-            "display": f"{round(similarity, 2)}%",
-            "midi_file": midi_file,
-        }
-        for midi_file, similarity in similar_midi
-    ]
-
-    return {
-        "items": response_items[:5],
-        "total": len(similar_midi),
-        "page": 1,
-        "size": len(similar_midi),
-    }
+    return {"time": f"{(time_end - time_start) * 1000:.2f} ms"}
 
 @app.get("/get_cache", response_model=PaginatedResponse)
 async def get_cache(

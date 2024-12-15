@@ -157,6 +157,7 @@ export default function Menu() {
 
           toast.success("Image query completed!", {
             duration: Infinity,
+            description: `fitting time ${data.fit} ms, preprocess time ${data.preprocess} ms, query time ${data.query} ms`,
           });
         } else {
           console.log("Upload failed");
@@ -208,7 +209,8 @@ export default function Menu() {
           setMidiFilePath("/api/uploads/query/" + file.name);
 
           toast.success("Audio query completed!", {
-            duration: Infinity,
+            duration: 10,
+            description: `Time taken: ${data.time}`,
           });
         } else {
           console.log("Upload failed");
