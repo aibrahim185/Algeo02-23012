@@ -20,9 +20,7 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [fetchUrl, setFetchUrl] = useState("get_uploads");
-  const [midiFilePath, setMidiFilePath] = useState(
-    "/midi/Never_Gonna_Give_You_Up.mid"
-  );
+  const [midiFilePath, setMidiFilePath] = useState("/midi/placeholder.mid");
   const [imageFilePath, setImageFilePath] = useState("/favicon.ico");
   const [title, setTitle] = useState("Ambalabu");
 

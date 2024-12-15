@@ -99,7 +99,7 @@ def get_uploaded_files(
             "display": image_file,
             "title": image_file,
             "image": f"/api/uploads/images/{image_file}",
-            "audio": f"/api/uploads/audio/{related_audio}" if related_audio else "/midi/Never_Gonna_Give_You_Up.mid"
+            "audio": f"/api/uploads/audio/{related_audio}" if related_audio else "/midi/placeholder.mid"
         })
 
     start = (page - 1) * size

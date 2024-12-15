@@ -46,7 +46,7 @@ export default function Menu() {
           console.log("aman");
           toast("File Submitted Successfully!");
 
-          setImageFilePath("/favicon.ico");
+          setImageFilePath("/placeholder.png");
           setTitle("Ambalabu");
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_uploads");
@@ -73,11 +73,11 @@ export default function Menu() {
 
       if (res.ok) {
         toast("Data deleted successfully!");
-        setImageFilePath("/favicon.ico");
+        setImageFilePath("/placeholder.png");
         setTitle("Ambalabu");
         setRefreshKey(refreshKey + 1);
         setFetchUrl("get_uploads");
-        setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
+        setMidiFilePath("/midi/placeholder.mid");
       } else {
         toast("Error deleting the data. 1");
       }
@@ -110,7 +110,7 @@ export default function Menu() {
           setTitle("Ambalabu");
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_uploads");
-          setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
+          setMidiFilePath("/midi/placeholder.mid");
 
           toast.success("Mapper Loaded!");
         } else {
@@ -153,7 +153,7 @@ export default function Menu() {
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
-          setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
+          setMidiFilePath("/midi/placeholder.mid");
 
           toast.success("Image query completed!", {
             duration: 30000,
@@ -248,7 +248,7 @@ export default function Menu() {
         console.log("aman");
         toast("File Submitted Successfully!");
 
-        setImageFilePath("/favicon.ico");
+        setImageFilePath("/placeholder.png");
         setTitle("Ambalabu");
         setRefreshKey(refreshKey + 1);
         setFetchUrl("get_uploads");
