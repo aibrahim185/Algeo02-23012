@@ -86,6 +86,7 @@ class ImagePCA:
                 filenames.append(filename)
                 if filename.endswith('.jpeg') or filename.endswith('.jpg') or filename.endswith('.png'):
                     image_paths.append(os.path.join(root, filename))
+                    filenames.append(filename)
 
         # Batch process images using multithreading
         with ThreadPoolExecutor() as executor:
