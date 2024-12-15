@@ -156,7 +156,7 @@ export default function Menu() {
           setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
 
           toast.success("Image query completed!", {
-            duration: Infinity,
+            duration: 30000,
             description: `fitting time ${data.fit} ms, preprocess time ${data.preprocess} ms, query time ${data.query} ms`,
           });
         } else {
@@ -209,7 +209,7 @@ export default function Menu() {
           setMidiFilePath("/api/uploads/query/" + file.name);
 
           toast.success("Audio query completed!", {
-            duration: 10,
+            duration: 30000,
             description: `Time taken: ${data.time}`,
           });
         } else {
@@ -310,7 +310,7 @@ export default function Menu() {
             </div>
             <Button
               type="button"
-              className="w-full text-red-600 border-2 border-red-900 hover:bg-red-900 rounded-lg"
+              className="w-full text-red-600 border-2 border-red-900 hover:bg-red-900 rounded-lg h-full"
               variant={"ghost"}
               onClick={handleDelete}
             >

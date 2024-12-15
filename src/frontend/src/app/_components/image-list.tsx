@@ -123,7 +123,7 @@ export default function MediaList() {
                 className="h-fit overflow-hidden p-2 pb-0 gap-0 bg-black rounded-xl flex flex-col text-center border-2 transition-transform duration-300 ease-in-out transform hover:scale-150 hover:z-50"
               >
                 <Image
-                  src={d.image}
+                  src={d.image || "/placeholder.ico"}
                   alt={d.display}
                   width={100}
                   height={100}
@@ -142,7 +142,7 @@ export default function MediaList() {
                 {d.title}
               </DialogTitle>
               <Image
-                src={d.image}
+                src={d.image || "/placeholder.ico"}
                 alt={d.id}
                 width={200}
                 height={200}
