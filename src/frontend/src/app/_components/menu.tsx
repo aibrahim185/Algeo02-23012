@@ -250,12 +250,7 @@ export default function Menu() {
                 id="file-input"
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 onChange={handleUploadDataset}
-                ref={(input) => {
-                  if (input) {
-                    input.setAttribute("webkitdirectory", "true");
-                  }
-                }}
-                accept=".mid,.zip,.rar,.7z,.ogg,.flac,.aac,.alac,.jpg,.jpeg,.png"
+                accept=".mid,.zip,.jpg,.jpeg,.png"
                 multiple
               />
               <Button
