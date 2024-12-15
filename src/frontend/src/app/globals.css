@@ -2,10 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -70,6 +66,13 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@font-face {
+  font-family: "Deadfall";
+  src: url("/fonts/Deadfall-Refular.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
 }
 
 @keyframes marquee {
