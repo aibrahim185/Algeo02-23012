@@ -279,8 +279,8 @@ export default function Menu() {
           />
           <MidiPlayerComponent midiFilePath={midiFilePath} />
           {/* <AudioRecorder /> */}
-          <div className="text-center overflow-hidden max-w-[270px]">
-            <h1 className="text-3xl font-extrabold font-bloody tracking-widest marquee w-fit">
+          <div className="text-center overflow-hidden max-w-[270px] w-full">
+            <h1 className="text-3xl font-extrabold font-bloody tracking-widest marquee">
               {title}
             </h1>
           </div>
