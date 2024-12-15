@@ -39,6 +39,7 @@ class PaginatedResponse(BaseModel):
     size: int
 
 mapper = {}
+cache = []
 
 @app.post("/upload_mapper")
 async def upload_mapper(mapper_file: UploadFile):
@@ -80,7 +81,6 @@ def get_uploaded_files(
     files = []
     
     for idx, audio_file in enumerate(filtered_audio):
-        # related_image = mapper[audio_file] if audio_file in mapper else None
         related_image = mapper.get(audio_file, None)
         
         files.append({
@@ -92,7 +92,6 @@ def get_uploaded_files(
         })
     
     for idx, image_file in enumerate(filtered_images):
-        # related_audio = mapper[image_file] if image_file in mapper else None
         related_audio = mapper.get(image_file, None)
         
         files.append({
@@ -161,8 +160,6 @@ async def create_upload_file(file_uploads: List[UploadFile]):
 
     return {"filenames": filenames}
 
-cache = []  # Unified cache for both image and MIDI results
-
 @app.post("/find_similar_images")
 async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0)):
     query_dir = os.path.join(UPLOAD_DIR, "query")
@@ -179,16 +176,14 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
     with open(query_image_path, "wb") as f:
         f.write(content)
     
-    # Load uploaded images for PCA
     image_dir = os.path.join(UPLOAD_DIR, "images")
-    images = ImagePCA.loadData(image_dir)
-
-    image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
-
-    # Preprocess images
     width = 200
     height = 200
-    prep_images, mean_array = ImagePCA.preprocessImages(images, width, height)
+    
+    # Load and preprocess images for PCA
+    preprocess_start = time.time()
+    prep_images, mean_array, image_files = ImagePCA.loadAndPreprocessData(image_dir, width, height)
+    preprocess_end = time.time()
 
     # Initialize and fit the PCA model
     fit_start = time.time()
@@ -197,10 +192,8 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
     fit_end = time.time()
 
     # Process the query image
-    preprocess_start = time.time()
     with Image.open(BytesIO(content)) as img:
         query_img = pca.preprocessQueryImage(img, width, height)
-    preprocess_end = time.time()
         
     # Find similar images
     query_start = time.time()
@@ -220,9 +213,9 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
     ]
     
     return {
-        "query": f"{(query_end - query_start) * 1000:.2f}",
         "preprocess": f"{(preprocess_end - preprocess_start) * 1000:.2f}",
         "fit": f"{(fit_end - fit_start) * 1000:.2f}",
+        "query": f"{(query_end - query_start) * 1000:.2f}",
     }
 
 @app.post("/find_similar_audio")

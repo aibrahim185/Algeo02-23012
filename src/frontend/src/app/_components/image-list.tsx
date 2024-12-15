@@ -105,22 +105,22 @@ export default function MediaList() {
 
   return (
     <div className="flex flex-wrap gap-6 justify-items-center overflow-hidden max-w-7xl">
-      <div className="bg-[url('/bg-card.jpeg')] border-2 mx-9 w-full rounded-xl flex flex-row items-center px-2">
+      <div className="bg-[url('/bg-card.jpeg')] border-2 mx-7 rounded-xl flex flex-row items-center px-2 max-w-7xl w-[1040px]">
         <Search />
         <Input
           className="border-none focus-visible:ring-0 placeholder:text-red-900 font-deadfall"
-          placeholder="Search "
+          placeholder="Search..."
           value={searchTerm}
           onChange={handleSearchChange}
         />
       </div>
-      <div className="flex flex-wrap gap-6 justify-center items-center max-w-7xl px-9">
+      <div className="grid grid-cols-7 gap-6 justify-center items-center max-w-7xl px-7">
         {items.map((d) => (
           <Dialog key={d.id}>
             <DialogTrigger asChild>
               <Button
                 variant={"ghost"}
-                className="h-fit overflow-hidden p-2 pb-0 gap-0 bg-[url('/bg-card.jpeg')] rounded-xl flex flex-col text-center border-2 transition-transform duration-300 ease-in-out transform hover:scale-150 hover:z-50"
+                className="h-[140px] w-[120px] overflow-hidden p-2 pb-0 gap-0 bg-[url('/bg-card.jpeg')] rounded-xl flex flex-col text-center border-2 transition-transform duration-300 ease-in-out transform hover:scale-150 hover:z-50"
               >
                 <Image
                   src={d.image || "/placeholder.png"}
