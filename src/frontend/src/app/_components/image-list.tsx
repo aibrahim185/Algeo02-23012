@@ -19,7 +19,7 @@ import MidiPlayerComponent from "./midi-player";
 import { Search } from "lucide-react";
 
 interface DataItem {
-  id: number;
+  id: string;
   title: string;
   image?: string;
   audio?: string;
@@ -122,11 +122,11 @@ export default function MediaList() {
             </DialogTrigger>
             <DialogContent className="bg-black p-6 rounded-lg flex flex-col items-center w-fit border-red-600">
               <DialogTitle className="truncate max-w-[270px]">
-                {d.title}
+                {d.id}
               </DialogTitle>
               <Image
                 src={d.image || "/placeholder.ico"}
-                alt={d.title}
+                alt={d.id}
                 width={200}
                 height={200}
                 className="rounded-lg w-full size-[270px] mb-3"

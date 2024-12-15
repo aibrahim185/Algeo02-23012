@@ -46,7 +46,7 @@ def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
     
     files = [
         {
-            "id": idx, 
+            "id": file, 
             "title": file, 
             "image": f"/api/uploads/images/{file}" if file in image_files else "/placeholder.ico",    
             "audio": f"/api/uploads/audio/{file}" if file in audio_files else None,
@@ -230,7 +230,7 @@ async def get_cache(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
             items.append({
                 "id": entry["file"],
                 "title": f"{round(entry['sim'], 2)}%",
-                "midi_file": f"/uploads/audio/{entry['file']}",
+                "audio": f"/api/uploads/audio/{entry['file']}",
                 "image": "/placeholder.ico",
             })
     
