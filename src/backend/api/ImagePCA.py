@@ -26,7 +26,7 @@ class ImagePCA:
 
     width = 200
     height = 200
-    prep_images, mean_array, image_paths = ImagePCA.loadAndPreprocessData(path, width, height)
+    prep_images, mean_array = ImagePCA.loadAndPreprocessData(path, width, height)
 
     pca = ImagePCA()
     pca.fit(prep_images, mean_array)
@@ -36,7 +36,7 @@ class ImagePCA:
         
     similar_images = pca.findSimilarImages(query_img, prep_images, 5)
     print(similar_images) # Output: List[(index, euclidean_distance, similarity)] of 5 most similar images to the query image
-    print([image_paths[x[0]] for x in similar_images]) # Output: List of image paths of the 5 most similar images
+    print([filenames[x[0]] for x in similar_images]) # Output: List of image filenames of the 5 most similar images
     
     # Similarity range: 0 to 1
     ```
@@ -73,17 +73,20 @@ class ImagePCA:
         A tuple containing:
         - A list of standardized images as numpy arrays
         - The mean array
-        - A list of image paths in the same order as the standardized images
+        - A list of image filenames
         """
         start = time.time()
         images = []
         image_paths = []
+        filenames = []
 
         # Collect all image paths
         for root, dirs, files in os.walk(path):
             for filename in files:
+                filenames.append(filename)
                 if filename.endswith('.jpeg') or filename.endswith('.jpg') or filename.endswith('.png'):
                     image_paths.append(os.path.join(root, filename))
+                    filenames.append(filename)
 
         # Batch process images using multithreading
         with ThreadPoolExecutor() as executor:
@@ -95,7 +98,7 @@ class ImagePCA:
         std_images, mean_array = ImagePCA.stadardizeGrayImages(images)
         end = time.time()
         print("Time to load and preprocess images: ", end - start)
-        return (std_images, mean_array, image_paths)
+        return (std_images, mean_array, filenames)
     
     @staticmethod
     def processImagePath(image_path, width, height):
