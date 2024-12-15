@@ -86,6 +86,7 @@ def get_uploaded_files(
         files.append({
             "id": idx,
             "display": audio_file,
+            "tile": audio_file,
             "image": f"/api/uploads/images/{related_image}" if related_image else "/placeholder.ico",
             "audio": f"/api/uploads/audio/{audio_file}"
         })
@@ -97,6 +98,7 @@ def get_uploaded_files(
         files.append({
             "id": idx + len(filtered_audio),
             "display": image_file,
+            "title": image_file,
             "image": f"/api/uploads/images/{image_file}",
             "audio": f"/api/uploads/audio/{related_audio}" if related_audio else "/midi/Never_Gonna_Give_You_Up.mid"
         })
@@ -273,7 +275,7 @@ async def get_cache(
         {
             "id": idx,
             "display": item["display"],
-            "title": item["image"] if "image" in item else item["audio"],
+            "title": item["audio"] if "audio" in item else item["image"],
             "image": f"/api/uploads/images/" + item["image"] if item["image"] != None else None,
             "audio": f"/api/uploads/audio/" + item["audio"] if item["audio"] != None else None,
             "sim": item["sim"],
