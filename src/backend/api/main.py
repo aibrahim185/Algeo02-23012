@@ -113,7 +113,7 @@ async def create_upload_file(file_uploads: List[UploadFile]):
 
     return {"filenames": filenames}
 
-similar_images_cache = []
+cache = []
 
 @app.post("/find_similar_images", response_model=PaginatedResponse)
 async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0)):
@@ -152,10 +152,10 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
         
     # Find similar images
     similar_images = pca.findSimilarImages(query_img, prep_images, len(image_files))
-    similar_images_cache[:] = copy.deepcopy(similar_images)
+    cache[:] = copy.deepcopy(similar_images)
     
     print(similar_images[:5])
-    print(similar_images_cache[:5])
+    print(cache[:5])
     
     response_items = []
     for idx, dist, sim in similar_images:
@@ -178,7 +178,7 @@ async def get_similar_images(page: int = Query(1, gt=0), size: int = Query(10, g
 
     image_files = [f for f in os.listdir(image_dir) if f.endswith((".jpg", ".jpeg", ".png"))]
 
-    total = len(similar_images_cache)
+    total = len(cache)
     
     start = (page - 1) * size
     end = start + size
@@ -188,7 +188,7 @@ async def get_similar_images(page: int = Query(1, gt=0), size: int = Query(10, g
             "title": f"{round(sim * 100, 3)}%",
             "image": f"/api/uploads/images/{image_files[idx]}",
         }
-        for idx, dist, sim in similar_images_cache[start:end]
+        for idx, dist, sim in cache[start:end]
     ]
 
     return PaginatedResponse(
@@ -226,7 +226,7 @@ async def find_similar_midi(query_midi: UploadFile):
         })
 
     return {
-        "items": response_items,
+        "items": response_items[:5],
         "total": len(similar_midi),
         "page": 1,
         "size": len(similar_midi),

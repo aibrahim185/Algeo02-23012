@@ -1,6 +1,5 @@
 import os
 import time
-import math
 import numpy as np
 from mido import MidiFile, MidiTrack, Message
 from multiprocessing import Pool
@@ -153,10 +152,3 @@ def get_similar_audio(target_midi_path, threshold=0):
     end_time = time.time()
     print(f"Execution Time: {(end_time - start_time)*1000:.2f} ms")
     return similar_songs
-
-
-# # Example usage
-# similar_files = get_similar_audio("Caught Up In You.mid", threshold=50)
-# print("Similar Files:")
-# for file, similarity in similar_files:
-#     print(f"{file}: {similarity:.2f}%")

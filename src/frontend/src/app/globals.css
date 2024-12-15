@@ -87,27 +87,65 @@ body {
 }
 
 .midi-player-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.midi-player-wrapper span > div {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: none !important;
+  gap: 0.5rem !important;
 }
 
 .midi-player-wrapper div[title="play"] {
-  background-color: #4caf50 !important;
+  background-color: #f44336 !important;
+  border: none !important;
+  position: static !important;
+  border-radius: 1rem !important;
 }
 
 .midi-player-wrapper div[title="pause"] {
   background-color: #f44336 !important;
+  border: none !important;
+  position: static !important;
+  border-radius: 1rem !important;
+}
+
+.midi-player-wrapper div[title="stop"] {
+  background-color: #f44336 !important;
+  border: none !important;
+  position: static !important;
+  border-radius: 1rem !important;
 }
 
 .midi-player-wrapper div[title="loop"],
 div[title="midi"] {
   display: none !important;
 }
+
 .midi-player-wrapper div[title="midi"] {
   display: none !important;
 }
 
-.midi-player-wrapper span > div {
-  background: none !important;
+.midi-player-wrapper div[title="Web Audio"] {
+  display: none !important;
+}
+
+.midi-player-wrapper span > div > div:nth-last-child(2) {
+  margin-left: 0.5rem !important;
+  position: static !important;
+}
+
+.midi-player-wrapper span > div > div:last-child {
+  background-color: #f44336 !important;
+  border: none !important;
+}
+
+.midi-player-wrapper span > div > div:last-child > div {
+  background-color: #f44336 !important;
+  border: none !important;
 }
