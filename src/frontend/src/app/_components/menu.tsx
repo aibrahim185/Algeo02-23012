@@ -273,14 +273,14 @@ export default function Menu() {
           />
           <MidiPlayerComponent midiFilePath={midiFilePath} />
           {/* <AudioRecorder /> */}
-          <div className="text-center overflow-hidden">
-            <h1 className="text-3xl font-extrabold overflow-hidden max-w-[270px] font-bloody tracking-widest">
+          <div className="text-center overflow-hidden max-w-[270px]">
+            <h1 className="text-3xl font-extrabold font-bloody tracking-widest marquee w-fit">
               {title}
             </h1>
           </div>
         </div>
         <div
-          className="flex flex-col justify-between gap-3 bg-black p-3 rounded-lg border-2 border-red-900"
+          className="flex flex-col justify-between gap-3 bg-black p-3 rounded-lg border-2 border-red-900 font-bloody tracking-widest"
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
         >

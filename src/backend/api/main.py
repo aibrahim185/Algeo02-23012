@@ -277,7 +277,7 @@ async def get_cache(
     if search:
         filtered_cache = [
             entry for entry in cache
-            if search.lower() in entry["file"].lower()
+            if (search.lower() in entry["image"].lower() or search.lower() in entry["audio"].lower())
         ]
     else:
         filtered_cache = cache
@@ -288,6 +288,7 @@ async def get_cache(
         {
             "id": idx,
             "display": item["display"],
+            "title": item["image"] if "image" in item else item["audio"],
             "image": f"/api/uploads/images/" + item["image"] if "image" in item else None,
             "audio": f"/api/uploads/audio/" + item["audio"] if "audio" in item else None,
             "sim": item["sim"],

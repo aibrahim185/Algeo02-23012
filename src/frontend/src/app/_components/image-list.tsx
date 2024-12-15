@@ -21,6 +21,7 @@ import { Search } from "lucide-react";
 interface DataItem {
   id: string;
   display: string;
+  title: string;
   image: string;
   audio: string;
   sim?: string;
@@ -94,7 +95,7 @@ export default function MediaList() {
         <PaginationLink
           href="#"
           onClick={() => handleJumpToPage(p)}
-          className={p === page ? "bg-gray-900" : ""}
+          className={p === page ? "bg-red-950" : ""}
         >
           {p}
         </PaginationLink>
@@ -130,13 +131,15 @@ export default function MediaList() {
                 />
 
                 <h1 className="font-bold m-1 max-w-[92px] overflow-hidden whitespace-nowrap">
-                  <span className="inline-block">{d.display}</span>
+                  <span className="inline-block font-was tracking-widest">
+                    {d.display}
+                  </span>
                 </h1>
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-black p-6 rounded-lg flex flex-col items-center w-fit border-red-600">
-              <DialogTitle className="truncate max-w-[270px]">
-                {d.display}
+              <DialogTitle className="truncate max-w-[270px] font-bloody">
+                {d.title}
               </DialogTitle>
               <Image
                 src={d.image}
@@ -146,14 +149,14 @@ export default function MediaList() {
                 className="rounded-lg w-full size-[270px] mb-3"
               />
               <MidiPlayerComponent midiFilePath={d.audio} />
-              <p>dist: {d.dist}</p>
-              <p>sim: {d.sim}</p>
+              {d.dist && <p className="font-bloody">dist: {d.dist}</p>}
+              {d.sim && <p className="font-bloody">sim: {d.sim}</p>}
             </DialogContent>
           </Dialog>
         ))}
       </div>
 
-      <div className="w-full">
+      <div className="w-full font-bloody">
         <Pagination className="w-fit bg-black rounded-xl flex items-center">
           <PaginationContent>
             {page > 1 && (
