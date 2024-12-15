@@ -26,7 +26,7 @@ class ImagePCA:
 
     width = 200
     height = 200
-    prep_images, mean_array = ImagePCA.loadAndPreprocessData(path, width, height)
+    prep_images, mean_array, image_paths = ImagePCA.loadAndPreprocessData(path, width, height)
 
     pca = ImagePCA()
     pca.fit(prep_images, mean_array)
@@ -35,9 +35,9 @@ class ImagePCA:
         query_img = pca.preprocessQueryImage(img, width, height)
         
     similar_images = pca.findSimilarImages(query_img, prep_images, 5)
-    print(similar_images)
+    print(similar_images) # Output: List[(index, euclidean_distance, similarity)] of 5 most similar images to the query image
+    print([image_paths[x[0]] for x in similar_images]) # Output: List of image paths of the 5 most similar images
     
-    # Output: List[(index, euclidean_distance, similarity)] of 5 most similar images to the query image
     # Similarity range: 0 to 1
     ```
 
@@ -70,7 +70,10 @@ class ImagePCA:
     def loadAndPreprocessData(path, width=100, height=100, batch_size=10):
         """
         Returns:
-        A list of images as numpy arrays
+        A tuple containing:
+        - A list of standardized images as numpy arrays
+        - The mean array
+        - A list of image paths in the same order as the standardized images
         """
         start = time.time()
         images = []
@@ -92,7 +95,7 @@ class ImagePCA:
         std_images, mean_array = ImagePCA.stadardizeGrayImages(images)
         end = time.time()
         print("Time to load and preprocess images: ", end - start)
-        return (std_images, mean_array)
+        return (std_images, mean_array, image_paths)
     
     @staticmethod
     def processImagePath(image_path, width, height):
