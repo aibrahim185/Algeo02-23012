@@ -114,13 +114,13 @@ export default function MediaList() {
           onChange={handleSearchChange}
         />
       </div>
-      <div className="flex flex-wrap gap-6 justify-center items-center overflow-hidden max-w-7xl px-7">
+      <div className="flex flex-wrap gap-6 justify-center items-center max-w-7xl px-7">
         {items.map((d) => (
           <Dialog key={d.id}>
             <DialogTrigger asChild>
               <Button
                 variant={"ghost"}
-                className="h-fit overflow-hidden p-2 pb-0 gap-0 bg-black rounded-xl flex flex-col text-center border-2 border-red-900"
+                className="h-fit overflow-hidden p-2 pb-0 gap-0 bg-black rounded-xl flex flex-col text-center border-2 border-red-900 transition-transform duration-300 ease-in-out transform hover:scale-150 hover:z-50"
               >
                 <Image
                   src={d.image}
@@ -138,7 +138,7 @@ export default function MediaList() {
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-black p-6 rounded-lg flex flex-col items-center w-fit border-red-600">
-              <DialogTitle className="truncate max-w-[270px] font-bloody">
+              <DialogTitle className="truncate max-w-[400px] font-bloody tracking-widest">
                 {d.title}
               </DialogTitle>
               <Image
@@ -146,7 +146,7 @@ export default function MediaList() {
                 alt={d.id}
                 width={200}
                 height={200}
-                className="rounded-lg w-full size-[270px] mb-3"
+                className="rounded-lg w-full size-[400px] mb-3"
               />
               <MidiPlayerComponent midiFilePath={d.audio} />
               {d.dist && <p className="font-bloody">dist: {d.dist}</p>}
