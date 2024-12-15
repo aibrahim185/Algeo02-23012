@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -36,6 +37,26 @@ class PaginatedResponse(BaseModel):
     page: int
     size: int
 
+mapper = {}
+
+@app.post("/upload_mapper")
+async def upload_mapper(mapper_file: UploadFile):
+    mapper_path = os.path.join(UPLOAD_DIR, mapper_file.filename)
+
+    with open(mapper_path, "wb") as f:
+        content = await mapper_file.read()
+        f.write(content)
+        
+    with open(mapper_path, "r") as f:
+        data = json.load(f)
+        
+        for entry in data:
+            if "audio_file" in entry and "pic_name" in entry:
+                mapper[entry["audio_file"]] = entry["pic_name"]
+                mapper[entry["pic_name"]] = entry["audio_file"]
+    
+    return {"message": "Mapper uploaded"}
+
 @app.get("/get_uploads", response_model=PaginatedResponse)
 def get_uploaded_files(
         page: int = Query(1, gt=0), 
@@ -49,34 +70,47 @@ def get_uploaded_files(
     audio_files = [f for f in os.listdir(audio_dir) if f.endswith((".mid"))]
     
     if search:
-        filtered_files = [
-            file for file in image_files + audio_files
-            if search.lower() in file.lower()
-        ]
+        filtered_audio = [file for file in audio_files if search.lower() in file.lower()]
+        filtered_images = [file for file in image_files if search.lower() in file.lower()]
     else:
-        filtered_files = image_files + audio_files
+        filtered_audio = audio_files
+        filtered_images = image_files
+
+    files = []
     
-    files = [
-        {
-            "id": file, 
-            "title": file, 
-            "image": f"/api/uploads/images/{file}" if file in image_files else "/placeholder.ico",    
-            "audio": f"/api/uploads/audio/{file}" if file in audio_files else None,
-        }
-        for file in filtered_files
-    ]
+    for idx, audio_file in enumerate(filtered_audio):
+        # related_image = mapper[audio_file] if audio_file in mapper else None
+        related_image = mapper.get(audio_file, None)
+        
+        files.append({
+            "id": idx,
+            "display": audio_file,
+            "image": f"/api/uploads/images/{related_image}" if related_image else "/placeholder.ico",
+            "audio": f"/api/uploads/audio/{audio_file}"
+        })
     
+    for idx, image_file in enumerate(filtered_images):
+        # related_audio = mapper[image_file] if image_file in mapper else None
+        related_audio = mapper.get(image_file, None)
+        
+        files.append({
+            "id": idx + len(filtered_audio),
+            "display": image_file,
+            "image": f"/api/uploads/images/{image_file}",
+            "audio": f"/api/uploads/audio/{related_audio}" if related_audio else "/midi/Never_Gonna_Give_You_Up.mid"
+        })
+
     start = (page - 1) * size
     end = start + size
     items = files[start:end]
-    total = len(filtered_files)
-    
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "size": size,
-    }
+    total = len(filtered_audio) + len(filtered_images)
+
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        size=size
+    )
 
 @app.post("/uploaddata")
 async def create_upload_file(file_uploads: List[UploadFile]):
@@ -166,15 +200,21 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
 
     # Update cache with image results
     cache[:] = [
-        {"type": "image", "idx": idx, "sim": sim, "file": image_files[idx]}
+        {
+            "display": f"{sim * 100:.2f}%",
+            "sim": sim, 
+            "dist": dist,
+            "image": image_files[idx],
+            "audio": mapper.get(image_files[idx], None),
+        }
         for idx, dist, sim in similar_images
     ]
     
     response_items = [
         {
-            "id": idx,
-            "title": f"{sim * 100:.2f}%",
-            "image": f"/api/uploads/images/{image_files[idx]}"
+            "image": image_files[idx],
+            "sim": sim,
+            "dist": dist,
         }
         for idx, dist, sim in similar_images
     ]
@@ -186,8 +226,8 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
         size=k,
     )
 
-@app.post("/find_similar_midi")
-async def find_similar_midi(query_audio: UploadFile):
+@app.post("/find_similar_audio")
+async def find_similar_audio(query_audio: UploadFile):
     query_dir = os.path.join(UPLOAD_DIR, "query")
     search_directory = os.path.join(os.path.dirname(__file__), "uploads/audio")
 
@@ -202,16 +242,20 @@ async def find_similar_midi(query_audio: UploadFile):
 
     # Update cache with MIDI results
     cache[:] = [
-        {"type": "midi", "file": midi_file, "sim": similarity}
+        {
+            "display": f"{similarity:.2f}%",
+            "sim": similarity,
+            "audio": midi_file, 
+            "image": mapper.get(midi_file, None),
+            
+        }
         for midi_file, similarity in similar_midi
     ]
 
     response_items = [
         {
-            "id": midi_file,
-            "title": f"{round(similarity, 2)}%",
-            "midi_file": f"/api/uploads/audio/{midi_file}",
-            "image": "/placeholder.ico",
+            "display": f"{round(similarity, 2)}%",
+            "midi_file": midi_file,
         }
         for midi_file, similarity in similar_midi
     ]
@@ -240,22 +284,17 @@ async def get_cache(
     
     start = (page - 1) * size
     end = start + size
-    items = []
-    
-    for entry in filtered_cache[start:end]:
-        if entry["type"] == "image":
-            items.append({
-                "id": entry["idx"],
-                "title": f"{round(entry['sim'] * 100, 3)}%",
-                "image": f"/api/uploads/images/{entry['file']}"
-            })
-        elif entry["type"] == "midi":
-            items.append({
-                "id": entry["file"],
-                "title": f"{round(entry['sim'], 2)}%",
-                "audio": f"/api/uploads/audio/{entry['file']}",
-                "image": "/placeholder.ico",
-            })
+    items = [
+        {
+            "id": idx,
+            "display": item["display"],
+            "image": f"/api/uploads/images/" + item["image"] if "image" in item else None,
+            "audio": f"/api/uploads/audio/" + item["audio"] if "audio" in item else None,
+            "sim": item["sim"],
+            "dist": item["dist"] if "dist" in item else None,
+        }
+        for idx, item in enumerate(filtered_cache[start:end])
+    ]
     
     return PaginatedResponse(
         items=items,

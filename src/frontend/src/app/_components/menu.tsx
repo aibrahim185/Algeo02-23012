@@ -87,6 +87,47 @@ export default function Menu() {
     }
   };
 
+  const handleMapperUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const file = e.target.files[0];
+      setSelectedFiles([file]);
+
+      const formData = new FormData();
+      formData.append("mapper_file", file);
+
+      try {
+        const endPoint = "api/upload_mapper";
+        const res = await fetch(endPoint, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          console.log(data);
+
+          setImageFilePath("/placeholder.ico");
+          setTitle("Ambalabu");
+          setRefreshKey(refreshKey + 1);
+          setFetchUrl("get_uploads");
+          setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
+
+          toast("Mapper Loaded!");
+        } else {
+          console.log("Upload failed");
+          toast("Something Went Wrong!", {
+            description: "Please try again later",
+          });
+        }
+      } catch {
+        console.log("Error in upload");
+        toast("Something Went Wrong!", {
+          description: "Please try again later",
+        });
+      }
+    }
+  };
+
   const handlePictureUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -138,21 +179,21 @@ export default function Menu() {
       const formData = new FormData();
       formData.append("query_audio", file);
 
-      const controller = new AbortController();
-      const timeout = 500000;
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-      }, timeout);
+      // const controller = new AbortController();
+      // const timeout = 500000;
+      // const timeoutId = setTimeout(() => {
+      //   controller.abort();
+      // }, timeout);
 
       try {
-        const endPoint = "api/find_similar_midi";
+        const endPoint = "api/find_similar_audio";
         const res = await fetch(endPoint, {
           method: "POST",
           body: formData,
-          signal: controller.signal,
+          // signal: controller.signal,
         });
 
-        clearTimeout(timeoutId);
+        // clearTimeout(timeoutId);
 
         if (res.ok) {
           const data = await res.json();
@@ -268,6 +309,22 @@ export default function Menu() {
               onClick={handleDelete}
             >
               Delete
+            </Button>
+          </div>
+          <div className="relative border-2 border-red-900 hover:bg-red-900 rounded-lg">
+            <Input
+              type="file"
+              id="file-input"
+              className="absolute inset-0 opacity-0 cursor-pointer"
+              onChange={handleMapperUpload}
+              accept=".json"
+            />
+            <Button
+              type="button"
+              className="w-full text-red-600"
+              variant={"ghost"}
+            >
+              Mapper
             </Button>
           </div>
           <div className="relative border-2 border-red-900 hover:bg-red-900 rounded-lg">

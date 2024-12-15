@@ -20,9 +20,11 @@ import { Search } from "lucide-react";
 
 interface DataItem {
   id: string;
-  title: string;
-  image?: string;
-  audio?: string;
+  display: string;
+  image: string;
+  audio: string;
+  sim?: string;
+  dist?: string;
 }
 
 export default function MediaList() {
@@ -120,30 +122,32 @@ export default function MediaList() {
                 className="h-fit overflow-hidden p-2 pb-0 gap-0 bg-black rounded-xl flex flex-col text-center border-2 border-red-900"
               >
                 <Image
-                  src={d.image || "/placeholder.ico"}
-                  alt={d.title}
+                  src={d.image}
+                  alt={d.display}
                   width={100}
                   height={100}
-                  className="rounded-lg"
+                  className="rounded-lg size-[100px]"
                 />
 
                 <h1 className="font-bold m-1 max-w-[92px] overflow-hidden whitespace-nowrap">
-                  <span className="inline-block">{d.title}</span>
+                  <span className="inline-block">{d.display}</span>
                 </h1>
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-black p-6 rounded-lg flex flex-col items-center w-fit border-red-600">
               <DialogTitle className="truncate max-w-[270px]">
-                {d.id}
+                {d.display}
               </DialogTitle>
               <Image
-                src={d.image || "/placeholder.ico"}
+                src={d.image}
                 alt={d.id}
                 width={200}
                 height={200}
                 className="rounded-lg w-full size-[270px] mb-3"
               />
-              <MidiPlayerComponent midiFilePath={d.audio || ""} />
+              <MidiPlayerComponent midiFilePath={d.audio} />
+              <p>dist: {d.dist}</p>
+              <p>sim: {d.sim}</p>
             </DialogContent>
           </Dialog>
         ))}
