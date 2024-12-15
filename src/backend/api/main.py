@@ -177,18 +177,18 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
     )
 
 @app.post("/find_similar_midi")
-async def find_similar_midi(query_midi: UploadFile):
+async def find_similar_midi(query_audio: UploadFile):
     query_dir = os.path.join(UPLOAD_DIR, "query")
     search_directory = os.path.join(os.path.dirname(__file__), "uploads/audio")
 
     os.makedirs(query_dir, exist_ok=True)
 
-    query_midi_path = os.path.join(query_dir, query_midi.filename)
-    with open(query_midi_path, "wb") as f:
-        content = await query_midi.read()
+    query_audio_path = os.path.join(query_dir, query_audio.filename)
+    with open(query_audio_path, "wb") as f:
+        content = await query_audio.read()
         f.write(content)
 
-    similar_midi = get_similar_audio(query_midi_path, search_directory)
+    similar_midi = get_similar_audio(query_audio_path, search_directory)
 
     # Update cache with MIDI results
     cache[:] = [

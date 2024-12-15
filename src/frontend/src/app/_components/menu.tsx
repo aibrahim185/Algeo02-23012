@@ -112,14 +112,23 @@ export default function Menu() {
       setSelectedFiles([file]);
 
       const formData = new FormData();
-      formData.append("query_midi", file);
+      formData.append("query_audio", file);
+
+      const controller = new AbortController();
+      const timeout = 500000;
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, timeout);
 
       try {
         const endPoint = "api/find_similar_midi";
         const res = await fetch(endPoint, {
           method: "POST",
           body: formData,
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (res.ok) {
           const data = await res.json();
