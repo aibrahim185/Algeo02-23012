@@ -83,7 +83,6 @@ class ImagePCA:
         # Collect all image paths
         for root, dirs, files in os.walk(path):
             for filename in files:
-                filenames.append(filename)
                 if filename.endswith('.jpeg') or filename.endswith('.jpg') or filename.endswith('.png'):
                     image_paths.append(os.path.join(root, filename))
                     filenames.append(filename)
