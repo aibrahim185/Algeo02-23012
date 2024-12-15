@@ -269,7 +269,7 @@ export default function Menu() {
   return (
     <div className="h-[96vh] min-w-sm max-w-sm sticky top-5 mx-5 flex">
       <div className="h-full p-6 rounded-3xl flex flex-col justify-between gap-6">
-        <div className="bg-black p-3 rounded-lg flex flex-col items-center border-2 border-red-900">
+        <div className="bg-[url('/bg-card.jpeg')] p-3 rounded-lg flex flex-col items-center border-2 border-red-900">
           <Image
             src={imageFilePath}
             alt={title}
@@ -286,7 +286,7 @@ export default function Menu() {
           </div>
         </div>
         <div
-          className="flex flex-col justify-between gap-3 bg-black p-3 rounded-lg border-2 border-red-900 font-bloody tracking-widest"
+          className="flex flex-col justify-between gap-3 bg-[url('/bg-card.jpeg')] p-3 rounded-lg border-2 border-red-900 font-bloody tracking-widest"
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
         >
