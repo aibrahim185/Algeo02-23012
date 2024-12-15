@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`antialiased bg-[url('/bg2.png')] min-h-screen backdrop-blur-sm flex flex-row 
+        className={`antialiased bg-[url('/bg.png')] min-h-screen backdrop-blur-sm flex flex-row 
           ${deadfall.variable} ${was.variable} ${bloody.variable}`}
       >
         {children}

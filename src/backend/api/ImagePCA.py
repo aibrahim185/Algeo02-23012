@@ -123,7 +123,7 @@ class ImagePCA:
         (std_images, mean_array)
         """
         N = len(images_array_1d)
-        len_image = len(images_array_1d[0])
+        # len_image = len(images_array_1d[0])
         std_images = []
 
         images_array_1d_np = np.array([img.astype(np.float32) for img in images_array_1d])

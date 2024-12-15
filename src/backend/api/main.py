@@ -1,4 +1,5 @@
 import json
+import time
 from fastapi import FastAPI, UploadFile, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -85,7 +86,8 @@ def get_uploaded_files(
         files.append({
             "id": idx,
             "display": audio_file,
-            "image": f"/api/uploads/images/{related_image}" if related_image else "/placeholder.ico",
+            "title": audio_file,
+            "image": f"/api/uploads/images/{related_image}" if related_image else "/placeholder.png",
             "audio": f"/api/uploads/audio/{audio_file}"
         })
     
@@ -96,6 +98,7 @@ def get_uploaded_files(
         files.append({
             "id": idx + len(filtered_audio),
             "display": image_file,
+            "title": image_file,
             "image": f"/api/uploads/images/{image_file}",
             "audio": f"/api/uploads/audio/{related_audio}" if related_audio else "/midi/Never_Gonna_Give_You_Up.mid"
         })
@@ -160,7 +163,7 @@ async def create_upload_file(file_uploads: List[UploadFile]):
 
 cache = []  # Unified cache for both image and MIDI results
 
-@app.post("/find_similar_images", response_model=PaginatedResponse)
+@app.post("/find_similar_images")
 async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0)):
     query_dir = os.path.join(UPLOAD_DIR, "query")
     
@@ -188,15 +191,21 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
     prep_images, mean_array = ImagePCA.preprocessImages(images, width, height)
 
     # Initialize and fit the PCA model
+    fit_start = time.time()
     pca = ImagePCA()
     pca.fit(prep_images, mean_array)
+    fit_end = time.time()
 
     # Process the query image
+    preprocess_start = time.time()
     with Image.open(BytesIO(content)) as img:
         query_img = pca.preprocessQueryImage(img, width, height)
+    preprocess_end = time.time()
         
     # Find similar images
+    query_start = time.time()
     similar_images = pca.findSimilarImages(query_img, prep_images, len(image_files))
+    query_end = time.time()
 
     # Update cache with image results
     cache[:] = [
@@ -210,21 +219,11 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
         for idx, dist, sim in similar_images
     ]
     
-    response_items = [
-        {
-            "image": image_files[idx],
-            "sim": sim,
-            "dist": dist,
-        }
-        for idx, dist, sim in similar_images
-    ]
-    
-    return PaginatedResponse(
-        items=response_items,
-        total=len(similar_images),
-        page=1,
-        size=k,
-    )
+    return {
+        "query": f"{(query_end - query_start) * 1000:.2f}",
+        "preprocess": f"{(preprocess_end - preprocess_start) * 1000:.2f}",
+        "fit": f"{(fit_end - fit_start) * 1000:.2f}",
+    }
 
 @app.post("/find_similar_audio")
 async def find_similar_audio(query_audio: UploadFile):
@@ -238,7 +237,9 @@ async def find_similar_audio(query_audio: UploadFile):
         content = await query_audio.read()
         f.write(content)
 
+    time_start = time.time()
     similar_midi = get_similar_audio(query_audio_path, search_directory)
+    time_end = time.time()
 
     # Update cache with MIDI results
     cache[:] = [
@@ -247,25 +248,11 @@ async def find_similar_audio(query_audio: UploadFile):
             "sim": similarity,
             "audio": midi_file, 
             "image": mapper.get(midi_file, None),
-            
         }
         for midi_file, similarity in similar_midi
     ]
 
-    response_items = [
-        {
-            "display": f"{round(similarity, 2)}%",
-            "midi_file": midi_file,
-        }
-        for midi_file, similarity in similar_midi
-    ]
-
-    return {
-        "items": response_items[:5],
-        "total": len(similar_midi),
-        "page": 1,
-        "size": len(similar_midi),
-    }
+    return {"time": f"{(time_end - time_start) * 1000:.2f} ms"}
 
 @app.get("/get_cache", response_model=PaginatedResponse)
 async def get_cache(
@@ -288,9 +275,9 @@ async def get_cache(
         {
             "id": idx,
             "display": item["display"],
-            "title": item["image"] if "image" in item else item["audio"],
-            "image": f"/api/uploads/images/" + item["image"] if "image" in item else None,
-            "audio": f"/api/uploads/audio/" + item["audio"] if "audio" in item else None,
+            "title": item["audio"] if "audio" in item else item["image"],
+            "image": f"/api/uploads/images/" + item["image"] if item["image"] != None else None,
+            "audio": f"/api/uploads/audio/" + item["audio"] if item["audio"] != None else None,
             "sim": item["sim"],
             "dist": item["dist"] if "dist" in item else None,
         }
@@ -303,56 +290,6 @@ async def get_cache(
         page=page,
         size=size,
     )
-
-
-@app.post("/upload_audio_and_convert")
-async def upload_audio_and_convert(file: UploadFile):
-    audio_dir = os.path.join(UPLOAD_DIR, "audio")
-    query_dir = os.path.join(UPLOAD_DIR, "query")
-    
-    # Ensure directories exist
-    os.makedirs(audio_dir, exist_ok=True)
-    os.makedirs(query_dir, exist_ok=True)
-
-    # Save the uploaded WAV file
-    audio_path = os.path.join(audio_dir, file.filename)
-    with open(audio_path, "wb") as f:
-        content = await file.read()
-        f.write(content)
-
-    # Convert WAV to MIDI
-    if not file.filename.endswith(".mid"):
-        midi_path = audio_to_midi(audio_path)
-    else:
-        midi_path = audio_path
-    
-    # Move MIDI file to the query directory
-    shutil.move(midi_path, os.path.join(query_dir, "output.mid"))
-
-    return {"message": "Audio converted to MIDI", "midi_file": "/uploads/query/output.mid"}
-
-def audio_to_midi(audio_path: str) -> str:
-    y, sr = librosa.load(audio_path, sr=None)
-    pitches, magnitudes = librosa.core.piptrack(y=y, sr=sr)
-
-    midi = MIDIFile(1)
-    track = 0
-    time = 0
-    midi.addTrackName(track, time, "Track")
-    midi.addTempo(track, time, 120)
-
-    for t in range(pitches.shape[1]):
-        pitch = pitches[:, t]
-        pitch_max = np.argmax(pitch)
-        midi_note = librosa.hz_to_midi(librosa.core.pitch_tuning(pitch_max))
-        midi.addNote(track, 0, int(midi_note), time, 1, 100)
-        time += 1
-
-    midi_path = os.path.join(UPLOAD_DIR, "output.mid")
-    with open(midi_path, "wb") as f:
-        midi.writeFile(f)
-
-    return midi_path
 
 @app.delete("/delete_data")
 async def delete_data():

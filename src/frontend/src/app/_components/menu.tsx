@@ -106,7 +106,7 @@ export default function Menu() {
           const data = await res.json();
           console.log(data);
 
-          setImageFilePath("/placeholder.ico");
+          setImageFilePath("/placeholder.png");
           setTitle("Ambalabu");
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_uploads");
@@ -156,7 +156,8 @@ export default function Menu() {
           setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
 
           toast.success("Image query completed!", {
-            duration: Infinity,
+            duration: 30000,
+            description: `fitting time ${data.fit} ms, preprocess time ${data.preprocess} ms, query time ${data.query} ms`,
           });
         } else {
           console.log("Upload failed");
@@ -201,14 +202,15 @@ export default function Menu() {
           const data = await res.json();
           console.log(data);
 
-          setImageFilePath(`/placeholder.ico`);
+          setImageFilePath(`/placeholder.png`);
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
           setMidiFilePath("/api/uploads/query/" + file.name);
 
           toast.success("Audio query completed!", {
-            duration: Infinity,
+            duration: 30000,
+            description: `Time taken: ${data.time}`,
           });
         } else {
           console.log("Upload failed");
@@ -267,7 +269,7 @@ export default function Menu() {
   return (
     <div className="h-[96vh] min-w-sm max-w-sm sticky top-5 mx-5 flex">
       <div className="h-full p-6 rounded-3xl flex flex-col justify-between gap-6">
-        <div className="bg-black p-3 rounded-lg flex flex-col items-center border-2 border-red-900">
+        <div className="bg-[url('/bg-card.jpeg')] p-3 rounded-lg flex flex-col items-center border-2 border-red-900">
           <Image
             src={imageFilePath}
             alt={title}
@@ -277,14 +279,14 @@ export default function Menu() {
           />
           <MidiPlayerComponent midiFilePath={midiFilePath} />
           {/* <AudioRecorder /> */}
-          <div className="text-center overflow-hidden max-w-[270px]">
-            <h1 className="text-3xl font-extrabold font-bloody tracking-widest marquee w-fit">
+          <div className="text-center overflow-hidden max-w-[270px] w-full">
+            <h1 className="text-3xl font-extrabold font-bloody tracking-widest marquee">
               {title}
             </h1>
           </div>
         </div>
         <div
-          className="flex flex-col justify-between gap-3 bg-black p-3 rounded-lg border-2 border-red-900 font-bloody tracking-widest"
+          className="flex flex-col justify-between gap-3 bg-[url('/bg-card.jpeg')] p-3 rounded-lg border-2 border-red-900 font-bloody tracking-widest"
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
         >
@@ -308,7 +310,7 @@ export default function Menu() {
             </div>
             <Button
               type="button"
-              className="w-full text-red-600 border-2 border-red-900 hover:bg-red-900 rounded-lg"
+              className="w-full text-red-600 border-2 border-red-900 hover:bg-red-900 rounded-lg h-full"
               variant={"ghost"}
               onClick={handleDelete}
             >
