@@ -105,7 +105,7 @@ export default function MediaList() {
 
   return (
     <div className="flex flex-wrap gap-6 justify-items-center overflow-hidden max-w-7xl">
-      <div className="bg-black border-2 border-red-900 mx-7 w-full rounded-xl flex flex-row items-center px-2">
+      <div className="bg-black border-2 mx-7 w-full rounded-xl flex flex-row items-center px-2">
         <Search />
         <Input
           className="border-none focus-visible:ring-0 placeholder:text-red-900 font-deadfall"
@@ -120,7 +120,7 @@ export default function MediaList() {
             <DialogTrigger asChild>
               <Button
                 variant={"ghost"}
-                className="h-fit overflow-hidden p-2 pb-0 gap-0 bg-black rounded-xl flex flex-col text-center border-2 border-red-900 transition-transform duration-300 ease-in-out transform hover:scale-150 hover:z-50"
+                className="h-fit overflow-hidden p-2 pb-0 gap-0 bg-black rounded-xl flex flex-col text-center border-2 transition-transform duration-300 ease-in-out transform hover:scale-150 hover:z-50"
               >
                 <Image
                   src={d.image}
@@ -149,15 +149,19 @@ export default function MediaList() {
                 className="rounded-lg w-full size-[400px] mb-3"
               />
               <MidiPlayerComponent midiFilePath={d.audio} />
-              {d.dist && <p className="font-bloody">dist: {d.dist}</p>}
-              {d.sim && <p className="font-bloody">sim: {d.sim}</p>}
+              {d.dist && (
+                <p className="font-bloody tracking-widest">dist: {d.dist}</p>
+              )}
+              {d.sim && (
+                <p className="font-bloody tracking-widest">sim: {d.sim}</p>
+              )}
             </DialogContent>
           </Dialog>
         ))}
       </div>
 
       <div className="w-full font-bloody">
-        <Pagination className="w-fit bg-black rounded-xl flex items-center border-2 border-red-900">
+        <Pagination className="w-fit bg-black rounded-xl flex items-center border-2">
           <PaginationContent>
             {page > 1 && (
               <PaginationItem>

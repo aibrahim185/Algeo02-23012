@@ -112,7 +112,7 @@ export default function Menu() {
           setFetchUrl("get_uploads");
           setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
 
-          toast("Mapper Loaded!");
+          toast.success("Mapper Loaded!");
         } else {
           console.log("Upload failed");
           toast("Something Went Wrong!", {
@@ -155,7 +155,9 @@ export default function Menu() {
           setFetchUrl("get_cache");
           setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
 
-          toast("Image query completed!");
+          toast.success("Image query completed!", {
+            duration: Infinity,
+          });
         } else {
           console.log("Upload failed");
           toast("Something Went Wrong!", {
@@ -205,7 +207,9 @@ export default function Menu() {
           setFetchUrl("get_cache");
           setMidiFilePath("/api/uploads/query/" + file.name);
 
-          toast("Audio query completed!");
+          toast.success("Audio query completed!", {
+            duration: Infinity,
+          });
         } else {
           console.log("Upload failed");
           toast("Something Went Wrong!", {
