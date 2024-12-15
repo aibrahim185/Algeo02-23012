@@ -86,7 +86,7 @@ def get_uploaded_files(
         files.append({
             "id": idx,
             "display": audio_file,
-            "tile": audio_file,
+            "title": audio_file,
             "image": f"/api/uploads/images/{related_image}" if related_image else "/placeholder.ico",
             "audio": f"/api/uploads/audio/{audio_file}"
         })
