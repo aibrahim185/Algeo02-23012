@@ -106,7 +106,7 @@ export default function Menu() {
           const data = await res.json();
           console.log(data);
 
-          setImageFilePath("/placeholder.ico");
+          setImageFilePath("/placeholder.png");
           setTitle("Ambalabu");
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_uploads");
@@ -202,7 +202,7 @@ export default function Menu() {
           const data = await res.json();
           console.log(data);
 
-          setImageFilePath(`/placeholder.ico`);
+          setImageFilePath(`/placeholder.png`);
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");

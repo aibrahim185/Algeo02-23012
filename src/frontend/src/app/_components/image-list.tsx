@@ -123,7 +123,7 @@ export default function MediaList() {
                 className="h-fit overflow-hidden p-2 pb-0 gap-0 bg-black rounded-xl flex flex-col text-center border-2 transition-transform duration-300 ease-in-out transform hover:scale-150 hover:z-50"
               >
                 <Image
-                  src={d.image || "/placeholder.ico"}
+                  src={d.image || "/placeholder.png"}
                   alt={d.display}
                   width={100}
                   height={100}
@@ -138,11 +138,11 @@ export default function MediaList() {
               </Button>
             </DialogTrigger>
             <DialogContent className="bg-black p-6 rounded-lg flex flex-col items-center w-fit border-red-600">
-              <DialogTitle className="truncate max-w-[400px] font-bloody tracking-widest">
+              <DialogTitle className="truncate max-w-[400px] font-bloody tracking-widest relative">
                 {d.title}
               </DialogTitle>
               <Image
-                src={d.image || "/placeholder.ico"}
+                src={d.image || "/placeholder.png"}
                 alt={d.id}
                 width={200}
                 height={200}
