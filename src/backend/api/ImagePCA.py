@@ -18,15 +18,14 @@ class ImagePCA:
     
     Contoh:
     ```python
-    from imagePCA import ImagePCA
+    from ImagePCA import ImagePCA
     
     path = "data/Cover_Art"
     query_path = "query/hind.jpg"
 
     width = 200
     height = 200
-    images = ImagePCA.loadData(path)
-    prep_images, mean_array = ImagePCA.preprocessImages(images, width, height)
+    prep_images, mean_array = ImagePCA.loadAndPreprocessData(path, width, height)
 
     pca = ImagePCA()
     pca.fit(prep_images, mean_array)
@@ -64,6 +63,24 @@ class ImagePCA:
                 img = Image.open(os.path.join(path, filename))
                 images.append(img)
         return images
+    
+    @staticmethod
+    def loadAndPreprocessData(path, width=100, height=100):
+        """
+        Returns:
+        A list of images as numpy arrays
+        """
+        start = time.time()
+        images = []
+        for filename in os.listdir(path):
+            if filename.endswith('.jpeg') or filename.endswith('.jpg') or filename.endswith('.png'):
+                with Image.open(os.path.join(path, filename)) as img:
+                    img_prep = ImagePCA.preprocessImage(img, width, height)
+                    images.append(img_prep)
+        std_images, mean_array = ImagePCA.stadardizeGrayImages(images)
+        end = time.time()
+        print("Time to load and preprocess images: ", end - start)
+        return (std_images, mean_array)
     
     @staticmethod
     def saveData(images, path):
@@ -183,9 +200,9 @@ class ImagePCA:
         
         U, S, Vt = ImagePCA.svdKPrincipleComponents(X, k_components)
         # U = U[:, :k_components]
-        # idx = np.argsort(S)[::-1]   # Indices to sort singular values in descending order
-        # S = S[idx]                  # Sorted singular values
-        # U = U[:, idx]               # Reorder left singular vectors
+        idx = np.argsort(S)[::-1]   # Indices to sort singular values in descending order
+        S = S[idx]                  # Sorted singular values
+        U = U[:, idx]               # Reorder left singular vectors
         self.U = U
         self.S = S
         self.X_mean_array = mean_array
@@ -264,6 +281,7 @@ class ImagePCA:
         Returns:
         A list of (indices, euclideanDistance) of the k most similar images to the query image
         """
+        start = time.time()
         if not self.fit_done:
             raise ValueError('Fit the model first')
         
@@ -284,6 +302,7 @@ class ImagePCA:
         # standardized_distances = 
         dmax = distances[-1][1]
         # std = np.std([d for i, d in distances])
-        distances = [(i, d, 1 - d/dmax) for i, d in distances]
-        
+        distances = [(i, d, 1 / (1 + d/dmax)) for i, d in distances]
+        end = time.time()
+        print("Time to find similar images: ", end - start)
         return distances[:k]
