@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Navbar } from "../_components/navbar";
 import Menu from "../_components/menu";
 import { DataProvider } from "../_context/DataContext";
 
@@ -20,13 +19,7 @@ export default function RootLayout({
       <DataProvider>
         <Menu />
 
-        <div className="flex flex-col">
-          <div className="w-full flex justify-center">
-            <Navbar />
-          </div>
-
-          {children}
-        </div>
+        <div className="flex flex-col">{children}</div>
       </DataProvider>
     </div>
   );

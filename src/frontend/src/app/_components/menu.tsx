@@ -23,7 +23,7 @@ export default function Menu() {
     setTitle,
   } = useDataContext();
 
-  const handleChangeAndSubmit = async (
+  const handleUploadDataset = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     if (e.target.files) {
@@ -65,6 +65,28 @@ export default function Menu() {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      const res = await fetch("api/delete_data", {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast("Data deleted successfully!");
+        setImageFilePath("/favicon.ico");
+        setTitle("Ambalabu");
+        setRefreshKey(refreshKey + 1);
+        setFetchUrl("uploads");
+        setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
+      } else {
+        toast("Error deleting the data. 1");
+      }
+    } catch (error) {
+      console.error("There was an error deleting the data", error);
+      toast("Error deleting the data.");
+    }
+  };
+
   const handlePictureUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -90,7 +112,7 @@ export default function Menu() {
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
-          setMidiFilePath("/midi/Never_Gonna_Give_You_Up.2.mid");
+          setMidiFilePath("/midi/Never_Gonna_Give_You_Up.mid");
 
           toast("Image query completed!");
         } else {
@@ -200,7 +222,7 @@ export default function Menu() {
   return (
     <div className="h-[96vh] min-w-sm max-w-sm sticky top-5 mx-5 flex">
       <div className="h-full p-6 rounded-3xl flex flex-col justify-between gap-6">
-        <div className="bg-black p-3 rounded-lg flex flex-col items-center">
+        <div className="bg-black p-3 rounded-lg flex flex-col items-center border-2 border-red-900">
           <Image
             src={imageFilePath}
             alt={title}
@@ -217,30 +239,40 @@ export default function Menu() {
           </div>
         </div>
         <div
-          className="flex flex-col justify-between gap-3 bg-black p-3 rounded-lg"
+          className="flex flex-col justify-between gap-3 bg-black p-3 rounded-lg border-2 border-red-900"
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
         >
-          <div className="relative border-2 border-red-900 hover:bg-red-900 rounded-lg">
-            <Input
-              type="file"
-              id="file-input"
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              onChange={handleChangeAndSubmit}
-              ref={(input) => {
-                if (input) {
-                  input.setAttribute("webkitdirectory", "true");
-                }
-              }}
-              accept=".mid,.zip,.rar,.7z,.ogg,.flac,.aac,.alac,.jpg,.jpeg,.png"
-              multiple
-            />
+          <div className="flex flex-row gap-3">
+            <div className="relative border-2 border-red-900 hover:bg-red-900 rounded-lg">
+              <Input
+                type="file"
+                id="file-input"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                onChange={handleUploadDataset}
+                ref={(input) => {
+                  if (input) {
+                    input.setAttribute("webkitdirectory", "true");
+                  }
+                }}
+                accept=".mid,.zip,.rar,.7z,.ogg,.flac,.aac,.alac,.jpg,.jpeg,.png"
+                multiple
+              />
+              <Button
+                type="button"
+                className="w-full text-red-600"
+                variant={"ghost"}
+              >
+                Upload Dataset
+              </Button>
+            </div>
             <Button
               type="button"
-              className="w-full text-red-600"
+              className="w-full text-red-600 border-2 border-red-900 hover:bg-red-900 rounded-lg"
               variant={"ghost"}
+              onClick={handleDelete}
             >
-              Upload Dataset
+              Delete
             </Button>
           </div>
           <div className="relative border-2 border-red-900 hover:bg-red-900 rounded-lg">

@@ -68,8 +68,6 @@ def get_uploaded_files(page: int = Query(1, gt=0), size: int = Query(10, gt=0)):
 
 @app.post("/uploaddata")
 async def create_upload_file(file_uploads: List[UploadFile]):
-    delete_data()
-
     audio_dir = os.path.join(UPLOAD_DIR, "audio")
     image_dir = os.path.join(UPLOAD_DIR, "images")
     query_dir = os.path.join(UPLOAD_DIR, "query")
@@ -293,7 +291,8 @@ def audio_to_midi(audio_path: str) -> str:
 
     return midi_path
 
-def delete_data():
+@app.delete("/delete_data")
+async def delete_data():
     exclude_files = {".gitkeep", ".gitignore"}
     
     for file in os.listdir(UPLOAD_DIR):
@@ -304,6 +303,14 @@ def delete_data():
 
         elif os.path.isdir(file_path):
             shutil.rmtree(file_path)
+            
+    audio_dir = os.path.join(UPLOAD_DIR, "audio")
+    image_dir = os.path.join(UPLOAD_DIR, "images")
+    query_dir = os.path.join(UPLOAD_DIR, "query")
+    
+    os.makedirs(audio_dir, exist_ok=True)
+    os.makedirs(image_dir, exist_ok=True)
+    os.makedirs(query_dir, exist_ok=True)
 
     return {"message": "Data deleted"}
 

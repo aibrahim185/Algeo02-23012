@@ -95,7 +95,7 @@ export default function MediaList() {
           <DialogTrigger asChild>
             <Button
               variant={"ghost"}
-              className="h-fit overflow-hidden p-2 pb-0 bg-black rounded-xl flex flex-col text-center"
+              className="h-fit overflow-hidden p-2 pb-0 gap-0 bg-black rounded-xl flex flex-col text-center border-2 border-red-900"
             >
               <Image
                 src={d.image || "/placeholder.ico"}
