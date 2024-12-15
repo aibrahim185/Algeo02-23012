@@ -157,7 +157,7 @@ export default function Menu() {
 
           toast.success("Image query completed!", {
             duration: 30000,
-            description: `fitting time ${data.fit} ms, preprocess time ${data.preprocess} ms, query time ${data.query} ms`,
+            description: `preprocess time ${data.preprocess} ms, fitting time ${data.fit} ms, query time ${data.query} ms`,
           });
         } else {
           console.log("Upload failed");
