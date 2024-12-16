@@ -39,6 +39,7 @@ class PaginatedResponse(BaseModel):
 
 mapper = {}
 cache = []
+time_cache = {}
 
 @app.post("/upload_mapper")
 async def upload_mapper(mapper_file: UploadFile):
@@ -189,6 +190,9 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
     prep_images, mean_array, image_files = ImagePCA.loadAndPreprocessData(image_dir, width, height)
     preprocess_end = time.time()
 
+    if not image_files:
+        return {"notfound": 1}
+
     # Initialize and fit the PCA model
     fit_start = time.time()
     pca = ImagePCA()
@@ -217,6 +221,11 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
         for idx, dist, sim in similar_images
     ]
     
+    time_cache["preprocess"] = f"{(preprocess_end - preprocess_start) * 1000:.2f}"
+    time_cache["fit"] = f"{(fit_end - fit_start) * 1000:.2f}"
+    time_cache["query"] = f"{(query_end - query_start) * 1000:.2f}"
+    time_cache["time"] = None
+    
     return {
         "preprocess": f"{(preprocess_end - preprocess_start) * 1000:.2f}",
         "fit": f"{(fit_end - fit_start) * 1000:.2f}",
@@ -234,6 +243,9 @@ async def find_similar_audio(query_audio: UploadFile):
     with open(query_audio_path, "wb") as f:
         content = await query_audio.read()
         f.write(content)
+        
+    if not os.listdir(search_directory):
+        return {"notfound": 1}
 
     time_start = time.time()
     similar_midi = get_similar_audio(query_audio_path, search_directory)
@@ -250,6 +262,11 @@ async def find_similar_audio(query_audio: UploadFile):
         }
         for midi_file, similarity in similar_midi
     ]
+    
+    time_cache["preprocess"] = None
+    time_cache["fit"] = None
+    time_cache["query"] = None
+    time_cache["time"] = f"{(time_end - time_start) * 1000:.2f}"
 
     return {"time": f"{(time_end - time_start) * 1000:.2f} ms"}
 
@@ -259,6 +276,9 @@ async def get_cache(
         size: int = Query(10, gt=0),
         search: str = Query("")
     ):
+    
+    if not cache:
+        return get_uploaded_files(page=page, size=size, search=search)
     
     if search:
         filtered_cache = [
@@ -289,6 +309,10 @@ async def get_cache(
         page=page,
         size=size,
     )
+    
+@app.get("/get_time_cache")
+async def get_time_cache():
+    return time_cache
 
 @app.delete("/delete_data")
 async def delete_data():

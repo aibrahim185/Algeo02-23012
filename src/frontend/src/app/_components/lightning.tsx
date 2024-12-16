@@ -75,9 +75,30 @@ export default function Lightning() {
         <Particles
           particlesLoaded={particlesLoaded}
           options={{
+            interactivity: {
+              events: {
+                onClick: {
+                  enable: true,
+                  mode: "repulse",
+                },
+                onHover: {
+                  enable: true,
+                  mode: "repulse",
+                  parallax: {
+                    enable: true,
+                    force: 60,
+                    smooth: 10,
+                  },
+                },
+                resize: {
+                  delay: 0.5,
+                  enable: true,
+                },
+              },
+            },
             particles: {
               number: {
-                value: 100,
+                value: 250,
                 density: {
                   enable: true,
                 },
@@ -89,14 +110,21 @@ export default function Lightning() {
                 value: 0.5,
               },
               size: {
-                value: 3,
+                value: 1,
+                animation: {
+                  enable: true,
+                  speed: 40,
+                },
               },
               move: {
                 enable: true,
-                speed: 1,
+                speed: 1.5,
                 direction: "none",
                 random: true,
                 straight: false,
+                outModes: {
+                  default: "out",
+                },
               },
             },
             retina_detect: true,

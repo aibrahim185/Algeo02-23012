@@ -17,6 +17,7 @@ import { Input } from "./ui/input";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "./ui/dialog";
 import MidiPlayerComponent from "./midi-player";
 import { Search } from "lucide-react";
+import { toast } from "sonner";
 
 interface DataItem {
   id: string;
@@ -29,7 +30,7 @@ interface DataItem {
 }
 
 export default function MediaList() {
-  const { refreshKey, fetchUrl } = useDataContext();
+  const { refreshKey, setRefreshKey, fetchUrl } = useDataContext();
   const [items, setItems] = useState<DataItem[]>([]);
   const [page, setPage] = useState(1);
   const [size] = useState(28);
@@ -78,6 +79,52 @@ export default function MediaList() {
     setPage(jumpPage);
   };
 
+  const handleRefresh = () => {
+    const fetchTimeCache = async () => {
+      try {
+        const res = await fetch("api/get_time_cache", {
+          method: "GET",
+        });
+        const data = await res.json();
+        if (data) {
+          toast.custom(
+            (t) => (
+              <div className="bg-transparent">
+                <div className="bg-[url('/bg-card.jpeg')] gap-5 border-2 rounded-xl p-4 flex flex-col items-center">
+                  <div className="flex flex-col items-center">
+                    {data.preprocess && <p>Preprocess: {data.preprocess}</p>}
+                    {data.fit && <p>Fit: {data.fit}</p>}
+                    {data.query && <p>Query: {data.query}</p>}
+                    {data.time && <p>Time taken: {data.time}</p>}
+                  </div>
+                  <Button
+                    variant={"ghost"}
+                    onClick={() => toast.dismiss(t)}
+                    className="border-2"
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              </div>
+            ),
+            {
+              duration: Infinity,
+              style: {
+                background: "transparent",
+              },
+            }
+          );
+        } else {
+          toast.error("Failed to fetch cache time");
+        }
+      } catch {
+        toast.error("Error fetching cache time");
+      }
+    };
+
+    fetchTimeCache();
+  };
+
   const renderPageNumbers = () => {
     const visiblePages = 3;
     const pages: number[] = [];
@@ -106,6 +153,21 @@ export default function MediaList() {
   return (
     <div className="flex flex-wrap gap-6 justify-items-center overflow-hidden max-w-7xl">
       <div className="bg-[url('/bg-card.jpeg')] border-2 mx-7 rounded-xl flex flex-row items-center px-2 max-w-7xl w-[1040px]">
+        <Button
+          onClick={() => {
+            setPage(1);
+            setRefreshKey(refreshKey + 1);
+            handleRefresh();
+          }}
+          className="p-2 bg-transparent"
+        >
+          <Image
+            src={"/placeholder.png"}
+            alt="refresh"
+            width={25}
+            height={25}
+          />
+        </Button>
         <Search />
         <Input
           className="border-none focus-visible:ring-0 placeholder:text-red-900 font-deadfall"
