@@ -23,8 +23,8 @@ export default function Lightning() {
         setIsLightning(true);
         setTimeout(() => {
           setIsLightning(false);
-          if (Math.random() < 0.1) {
-            if (Math.random() < 0.5) {
+          if (Math.random() < 1) {
+            if (Math.random() < 0) {
               setIsBloody(true);
             } else {
               setIsJumpscare(true);
