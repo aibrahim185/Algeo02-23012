@@ -29,7 +29,7 @@ interface DataItem {
 }
 
 export default function MediaList() {
-  const { refreshKey, fetchUrl } = useDataContext();
+  const { refreshKey, setRefreshKey, fetchUrl } = useDataContext();
   const [items, setItems] = useState<DataItem[]>([]);
   const [page, setPage] = useState(1);
   const [size] = useState(28);
@@ -106,6 +106,20 @@ export default function MediaList() {
   return (
     <div className="flex flex-wrap gap-6 justify-items-center overflow-hidden max-w-7xl">
       <div className="bg-[url('/bg-card.jpeg')] border-2 mx-7 rounded-xl flex flex-row items-center px-2 max-w-7xl w-[1040px]">
+        <Button
+          onClick={() => {
+            setPage(1);
+            setRefreshKey(refreshKey + 1);
+          }}
+          className="p-2 bg-transparent"
+        >
+          <Image
+            src={"/placeholder.png"}
+            alt="refresh"
+            width={25}
+            height={25}
+          />
+        </Button>
         <Search />
         <Input
           className="border-none focus-visible:ring-0 placeholder:text-red-900 font-deadfall"
