@@ -12,7 +12,6 @@ from typing import List
 from io import BytesIO
 import copy
 from midiutil import MIDIFile
-import librosa
 import numpy as np
 
 from api.ImagePCA import ImagePCA
