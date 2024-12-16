@@ -36,51 +36,56 @@ export default function Menu() {
         formData.append("file_uploads", file);
       });
 
-      const endPoint = "api/uploaddata";
-      await axios
-        .post(endPoint, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      try {
+        const res = await axios.post("api/uploaddata", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
           timeout: 30 * 60 * 1000, // 30 minutes
-        })
-        .then(() => {
-          toast.success("File Submitted Successfully!");
+        });
 
+        if (res.status === 200) {
+          toast.success("File Submitted Successfully!");
           setImageFilePath("/placeholder.png");
           setTitle("Ambalabu");
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_uploads");
-        })
-        .catch((error) => {
-          if (error.code === "ECONNABORTED") {
-            toast.error("Upload timed out");
+        } else {
+          throw new Error("Failed to upload");
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          if (error.code === "ECONNRESET") {
+            toast.error("Connection was lost");
           } else {
-            toast.error("Upload failed", error);
+            toast.error("Upload failed", { description: error.message });
           }
-        });
+        } else {
+          toast.error("Upload failed", { description: "Unknown error" });
+        }
+      }
     }
   };
 
   const handleDelete = async () => {
     try {
-      const res = await fetch("api/delete_data", {
-        method: "DELETE",
+      const res = await axios.delete("api/delete_data", {
+        timeout: 30 * 60 * 1000, // 30 minutes
       });
-
-      if (res.ok) {
-        toast("Data deleted successfully!");
+      if (res.status === 200) {
+        toast.success("Data deleted successfully!");
         setImageFilePath("/placeholder.png");
         setTitle("Ambalabu");
         setRefreshKey(refreshKey + 1);
         setFetchUrl("get_uploads");
         setMidiFilePath("/midi/placeholder.mid");
       } else {
-        toast("Error deleting the data. 1");
+        throw new Error("Failed to delete");
       }
     } catch (error) {
-      console.error("There was an error deleting the data", error);
-      toast("Error deleting the data.");
+      if (error instanceof Error) {
+        toast.error("Delete failed", { description: error.message });
+      } else {
+        toast.error("Delete failed", { description: "Unknown error" });
+      }
     }
   };
 
@@ -93,34 +98,35 @@ export default function Menu() {
       formData.append("mapper_file", file);
 
       try {
-        const endPoint = "api/upload_mapper";
-        const res = await fetch(endPoint, {
-          method: "POST",
-          body: formData,
+        const res = await axios.post("api/upload_mapper", formData, {
+          timeout: 30 * 60 * 1000, // 30 minutes
         });
-
-        if (res.ok) {
-          const data = await res.json();
-          console.log(data);
-
+        if (res.status === 200) {
           setImageFilePath("/placeholder.png");
           setTitle("Ambalabu");
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_uploads");
           setMidiFilePath("/midi/placeholder.mid");
-
           toast.success("Mapper Loaded!");
         } else {
-          console.log("Upload failed");
-          toast("Something Went Wrong!", {
-            description: "Please try again later",
+          throw new Error("Failed to upload mapper");
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error instanceof Error) {
+            toast.error("Something Went Wrong!", {
+              description: error.message,
+            });
+          } else {
+            toast.error("Something Went Wrong!", {
+              description: "Unknown error",
+            });
+          }
+        } else {
+          toast.error("Something Went Wrong!", {
+            description: "Unknown error",
           });
         }
-      } catch {
-        console.log("Error in upload");
-        toast("Something Went Wrong!", {
-          description: "Please try again later",
-        });
       }
     }
   };
@@ -136,37 +142,39 @@ export default function Menu() {
       formData.append("query_image", file);
 
       try {
-        const endPoint = "api/find_similar_images";
-        const res = await fetch(endPoint, {
-          method: "POST",
-          body: formData,
+        const res = await axios.post("api/find_similar_images", formData, {
+          timeout: 30 * 60 * 1000, // 30 minutes
         });
-
-        if (res.ok) {
-          const data = await res.json();
-          console.log(data);
-
+        if (res.status === 200) {
+          const data = res.data;
           setImageFilePath(`/api/uploads/query/${file.name}`);
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
           setMidiFilePath("");
-
           toast.success("Image query completed!", {
             duration: 30000,
             description: `preprocess time ${data.preprocess} ms, fitting time ${data.fit} ms, query time ${data.query} ms`,
           });
         } else {
-          console.log("Upload failed");
-          toast("Something Went Wrong!", {
-            description: "Please try again later",
+          throw new Error("Failed to find similar image");
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error instanceof Error) {
+            toast.error("Something Went Wrong!", {
+              description: error.message,
+            });
+          } else {
+            toast.error("Something Went Wrong!", {
+              description: "Unknown error",
+            });
+          }
+        } else {
+          toast.error("Something Went Wrong!", {
+            description: "Unknown error",
           });
         }
-      } catch {
-        console.log("Error in upload");
-        toast("Something Went Wrong!", {
-          description: "Please try again later",
-        });
       }
     }
   };
@@ -179,47 +187,40 @@ export default function Menu() {
       const formData = new FormData();
       formData.append("query_audio", file);
 
-      // const controller = new AbortController();
-      // const timeout = 500000;
-      // const timeoutId = setTimeout(() => {
-      //   controller.abort();
-      // }, timeout);
-
       try {
-        const endPoint = "api/find_similar_audio";
-        const res = await fetch(endPoint, {
-          method: "POST",
-          body: formData,
-          // signal: controller.signal,
+        const res = await axios.post("api/find_similar_audio", formData, {
+          timeout: 30 * 60 * 1000, // 30 minutes
         });
-
-        // clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const data = await res.json();
-          console.log(data);
-
-          setImageFilePath(`/placeholder.png`);
+        if (res.status === 200) {
+          const data = res.data;
+          setImageFilePath("/placeholder.png");
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
-          setMidiFilePath("/api/uploads/query/" + file.name);
-
+          setMidiFilePath(`/api/uploads/query/${file.name}`);
           toast.success("Audio query completed!", {
             duration: 30000,
             description: `Time taken: ${data.time}`,
           });
         } else {
-          console.log("Upload failed");
-          toast("Something Went Wrong!", {
-            description: "Please try again later",
+          throw new Error("Failed to find similar audio");
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error instanceof Error) {
+            toast.error("Something Went Wrong!", {
+              description: error.message,
+            });
+          } else {
+            toast.error("Something Went Wrong!", {
+              description: "Unknown error",
+            });
+          }
+        } else {
+          toast.error("Something Went Wrong!", {
+            description: "Unknown error",
           });
         }
-      } catch {
-        console.log("Error in upload");
-        toast("Something Went Wrong!", {
-          description: "Please try again later",
-        });
       }
     }
   };
@@ -230,36 +231,37 @@ export default function Menu() {
     setSelectedFiles(filesArray);
 
     const formData = new FormData();
-    filesArray.forEach((file) => {
-      formData.append("file_uploads", file);
-    });
+    filesArray.forEach((file) => formData.append("file_uploads", file));
 
     try {
-      const endPoint = "api/uploaddata";
-      const res = await fetch(endPoint, {
-        method: "POST",
-        body: formData,
+      const res = await axios.post("api/uploaddata", formData, {
+        timeout: 30 * 60 * 1000, // 30 minutes
       });
-
-      if (res.ok) {
-        console.log("aman");
-        toast("File Submitted Successfully!");
-
+      if (res.status === 200) {
+        toast.success("File Submitted Successfully!");
         setImageFilePath("/placeholder.png");
         setTitle("Ambalabu");
         setRefreshKey(refreshKey + 1);
         setFetchUrl("get_uploads");
       } else {
-        console.log("ga aman");
-        toast("Something Went Wrong!", {
-          description: "Please try again later",
+        throw new Error("Failed to upload");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error instanceof Error) {
+          toast.error("Something Went Wrong!", {
+            description: error.message,
+          });
+        } else {
+          toast.error("Something Went Wrong!", {
+            description: "Unknown error",
+          });
+        }
+      } else {
+        toast.error("Something Went Wrong!", {
+          description: "Unknown error",
         });
       }
-    } catch {
-      console.log("ga aman 2");
-      toast("Something Went Wrong!", {
-        description: "Please try again later",
-      });
     }
   };
 
