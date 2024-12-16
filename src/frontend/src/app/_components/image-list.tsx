@@ -30,7 +30,7 @@ interface DataItem {
 }
 
 export default function MediaList() {
-  const { refreshKey, setRefreshKey, fetchUrl } = useDataContext();
+  const { refreshKey, setRefreshKey, fetchUrl, setFetchUrl } = useDataContext();
   const [items, setItems] = useState<DataItem[]>([]);
   const [page, setPage] = useState(1);
   const [size] = useState(28);
@@ -157,6 +157,7 @@ export default function MediaList() {
           onClick={() => {
             setPage(1);
             setRefreshKey(refreshKey + 1);
+            setFetchUrl("get_cache")
             handleRefresh();
           }}
           className="p-2 bg-transparent"
