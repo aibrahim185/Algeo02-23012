@@ -18,7 +18,7 @@ export default function Lightning() {
         setIsLightning(true);
         setTimeout(() => {
           setIsLightning(false);
-          if (Math.random() < 0.2) {
+          if (Math.random() < 0.1) {
             if (Math.random() < 0.5) {
               setIsBloody(true);
             } else {
@@ -31,7 +31,7 @@ export default function Lightning() {
 
     const lightningInterval = setInterval(() => {
       triggerLightning();
-    }, Math.random() * 1 + 3000);
+    }, Math.random() * 7000 + 3000);
 
     return () => clearInterval(lightningInterval);
   }, []);
@@ -42,7 +42,7 @@ export default function Lightning() {
       }`}
     >
       {isBloody && (
-        <div className="size-full inset-0 absolute bg-[url('/blood.png')] animate-pulse"></div>
+        <div className="size-full inset-0 absolute bg-[url('/blood.png')]"></div>
       )}
       {isJumpscare && (
         <Image
@@ -50,7 +50,7 @@ export default function Lightning() {
           width={200}
           height={200}
           alt="jumpscare"
-          className="w-1/2 h-full absolute inset-0"
+          className="w-1/2 h-full inset-0 absolute animate-pulse"
         />
       )}
     </div>

@@ -153,7 +153,7 @@ export default function Menu() {
           setTitle(file.name);
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
-          setMidiFilePath("/midi/placeholder.mid");
+          setMidiFilePath("");
 
           toast.success("Image query completed!", {
             duration: 30000,
@@ -277,7 +277,9 @@ export default function Menu() {
             height={200}
             className="rounded-lg w-full size-[270px] mb-3"
           />
-          <MidiPlayerComponent midiFilePath={midiFilePath} />
+          {midiFilePath != "" && (
+            <MidiPlayerComponent midiFilePath={midiFilePath} />
+          )}
           {/* <AudioRecorder /> */}
           <div className="text-center overflow-hidden max-w-[270px] w-full">
             <h1 className="text-3xl font-extrabold font-bloody tracking-widest marquee">

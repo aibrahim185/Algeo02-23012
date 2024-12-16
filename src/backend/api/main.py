@@ -56,6 +56,10 @@ async def upload_mapper(mapper_file: UploadFile):
             if "audio_file" in entry and "pic_name" in entry:
                 mapper[entry["audio_file"]] = entry["pic_name"]
                 mapper[entry["pic_name"]] = entry["audio_file"]
+                
+                if "name" in entry:
+                    mapper[entry["audio_file"] + "_name"] = entry["name"]
+                    mapper[entry["pic_name"] + "_name"] = entry["name"]
     
     return {"message": "Mapper uploaded"}
 
@@ -81,12 +85,13 @@ def get_uploaded_files(
     files = []
     
     for idx, audio_file in enumerate(filtered_audio):
+        name = mapper.get(audio_file + "_name", None)
         related_image = mapper.get(audio_file, None)
         
         files.append({
             "id": idx,
             "display": audio_file,
-            "title": audio_file,
+            "title": name if name else audio_file,
             "image": f"/api/uploads/images/{related_image}" if related_image else "/placeholder.png",
             "audio": f"/api/uploads/audio/{audio_file}"
         })
@@ -204,6 +209,7 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
     cache[:] = [
         {
             "display": f"{sim * 100:.2f}%",
+            "title": mapper.get(image_files[idx] + "_name", image_files[idx]),
             "sim": sim, 
             "dist": dist,
             "image": image_files[idx],
@@ -238,6 +244,7 @@ async def find_similar_audio(query_audio: UploadFile):
     cache[:] = [
         {
             "display": f"{similarity:.2f}%",
+            "title": mapper.get(midi_file + "_name", midi_file),
             "sim": similarity,
             "audio": midi_file, 
             "image": mapper.get(midi_file, None),
@@ -257,7 +264,7 @@ async def get_cache(
     if search:
         filtered_cache = [
             entry for entry in cache
-            if (search.lower() in entry["image"].lower() or search.lower() in entry["audio"].lower())
+            if (search.lower() in entry["image"].lower() or search.lower() in entry["audio"].lower()) or search.lower() in entry["title"].lower()
         ]
     else:
         filtered_cache = cache
@@ -268,7 +275,7 @@ async def get_cache(
         {
             "id": idx,
             "display": item["display"],
-            "title": item["audio"] if "audio" in item else item["image"],
+            "title": item["title"] if "title" in item else item["audio"] if "audio" in item else item["image"],
             "image": f"/api/uploads/images/" + item["image"] if item["image"] != None else None,
             "audio": f"/api/uploads/audio/" + item["audio"] if item["audio"] != None else None,
             "sim": item["sim"],

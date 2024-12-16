@@ -148,7 +148,7 @@ export default function MediaList() {
                 height={200}
                 className="rounded-lg w-full size-[400px] mb-3"
               />
-              {d.audio != "/midi/placeholder.mid" && (
+              {d.audio !== "/midi/placeholder.mid" && d.audio !== null && (
                 <MidiPlayerComponent midiFilePath={d.audio} />
               )}
               {d.dist && (
