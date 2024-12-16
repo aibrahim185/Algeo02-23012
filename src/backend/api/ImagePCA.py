@@ -26,7 +26,7 @@ class ImagePCA:
 
     width = 100
     height = 100
-    prep_images, mean_array = ImagePCA.loadAndPreprocessData(path, width, height)
+    prep_images, mean_array, filenames = ImagePCA.loadAndPreprocessData(path, width, height)
 
     pca = ImagePCA()
     pca.fit(prep_images, mean_array)
@@ -128,6 +128,7 @@ class ImagePCA:
         Returns:
         (std_images, mean_array)
         """
+        start = time.time()
         N = len(images_array_1d)
         # len_image = len(images_array_1d[0])
         std_images = []
@@ -144,6 +145,8 @@ class ImagePCA:
             #     std_image[j] = ImagePCA.standardizePixel(images_array_1d[i][j], mean_array[j])
             # std_images.append(np.array(std_image, dtype=np.float32))
             std_images.append(images_array_1d_np[i] - mean_array)
+        end = time.time()
+        print("Time to standardize images: ", end - start)
         
         return (std_images, mean_array)
             
@@ -157,16 +160,17 @@ class ImagePCA:
         image_1d = np.array(image_gray).flatten()
         return image_1d
     
-    def preprocessQueryImage(self, image, width, height):
+    def preprocessQueryImage(self, image, width=100, height=100):
         """
         Preprocesses the image by converting it to numpy array and standardizing it
         """
         if not self.fit_done:
             raise ValueError('Fit the model first')
         image_1d = ImagePCA.preprocessImage(image, width, height)
-        std_image = np.zeros(len(image_1d))
-        for i in range(len(image_1d)):
-            std_image[i] = ImagePCA.standardizePixel(image_1d[i], self.X_mean_array[i])
+        # std_image = np.zeros(len(image_1d))
+        # for i in range(len(image_1d)):
+        #     std_image[i] = ImagePCA.standardizePixel(image_1d[i], self.X_mean_array[i])
+        std_image = image_1d - self.X_mean_array
         return std_image
 
     @staticmethod
