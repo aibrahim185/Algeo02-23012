@@ -26,7 +26,7 @@ class ImagePCA:
 
     width = 100
     height = 100
-    prep_images, mean_array = ImagePCA.loadAndPreprocessData(path, width, height)
+    prep_images, mean_array, filenames = ImagePCA.loadAndPreprocessData(path, width, height)
 
     pca = ImagePCA()
     pca.fit(prep_images, mean_array)
