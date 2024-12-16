@@ -40,6 +40,7 @@ class PaginatedResponse(BaseModel):
 
 mapper = {}
 cache = []
+time_cache = {}
 
 @app.post("/upload_mapper")
 async def upload_mapper(mapper_file: UploadFile):
@@ -218,6 +219,11 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
         for idx, dist, sim in similar_images
     ]
     
+    time_cache["preprocess"] = f"{(preprocess_end - preprocess_start) * 1000:.2f}"
+    time_cache["fit"] = f"{(fit_end - fit_start) * 1000:.2f}"
+    time_cache["query"] = f"{(query_end - query_start) * 1000:.2f}"
+    time_cache["time"] = None
+    
     return {
         "preprocess": f"{(preprocess_end - preprocess_start) * 1000:.2f}",
         "fit": f"{(fit_end - fit_start) * 1000:.2f}",
@@ -251,6 +257,11 @@ async def find_similar_audio(query_audio: UploadFile):
         }
         for midi_file, similarity in similar_midi
     ]
+    
+    time_cache["preprocess"] = None
+    time_cache["fit"] = None
+    time_cache["query"] = None
+    time_cache["time"] = f"{(time_end - time_start) * 1000:.2f}"
 
     return {"time": f"{(time_end - time_start) * 1000:.2f} ms"}
 
@@ -290,6 +301,10 @@ async def get_cache(
         page=page,
         size=size,
     )
+    
+@app.get("/get_time_cache")
+async def get_time_cache():
+    return time_cache
 
 @app.delete("/delete_data")
 async def delete_data():
