@@ -128,6 +128,7 @@ class ImagePCA:
         Returns:
         (std_images, mean_array)
         """
+        start = time.time()
         N = len(images_array_1d)
         # len_image = len(images_array_1d[0])
         std_images = []
@@ -144,6 +145,8 @@ class ImagePCA:
             #     std_image[j] = ImagePCA.standardizePixel(images_array_1d[i][j], mean_array[j])
             # std_images.append(np.array(std_image, dtype=np.float32))
             std_images.append(images_array_1d_np[i] - mean_array)
+        end = time.time()
+        print("Time to standardize images: ", end - start)
         
         return (std_images, mean_array)
             
@@ -164,9 +167,10 @@ class ImagePCA:
         if not self.fit_done:
             raise ValueError('Fit the model first')
         image_1d = ImagePCA.preprocessImage(image, width, height)
-        std_image = np.zeros(len(image_1d))
-        for i in range(len(image_1d)):
-            std_image[i] = ImagePCA.standardizePixel(image_1d[i], self.X_mean_array[i])
+        # std_image = np.zeros(len(image_1d))
+        # for i in range(len(image_1d)):
+        #     std_image[i] = ImagePCA.standardizePixel(image_1d[i], self.X_mean_array[i])
+        std_image = image_1d - self.X_mean_array
         return std_image
 
     @staticmethod
