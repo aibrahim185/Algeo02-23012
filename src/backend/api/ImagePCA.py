@@ -160,7 +160,7 @@ class ImagePCA:
         image_1d = np.array(image_gray).flatten()
         return image_1d
     
-    def preprocessQueryImage(self, image, width, height):
+    def preprocessQueryImage(self, image, width=100, height=100):
         """
         Preprocesses the image by converting it to numpy array and standardizing it
         """
