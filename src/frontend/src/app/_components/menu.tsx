@@ -152,10 +152,14 @@ export default function Menu() {
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
           setMidiFilePath("");
-          toast.success("Image query completed!", {
-            duration: 30000,
-            description: `preprocess time ${data.preprocess} ms, fitting time ${data.fit} ms, query time ${data.query} ms`,
-          });
+          if (data.notfound) {
+            toast.error("No dataset found");
+          } else {
+            toast.success("Image query completed!", {
+              duration: 30000,
+              description: `preprocess time ${data.preprocess} ms, fitting time ${data.fit} ms, query time ${data.query} ms`,
+            });
+          }
         } else {
           throw new Error("Failed to find similar image");
         }
@@ -198,10 +202,14 @@ export default function Menu() {
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_cache");
           setMidiFilePath(`/api/uploads/query/${file.name}`);
-          toast.success("Audio query completed!", {
-            duration: 30000,
-            description: `Time taken: ${data.time}`,
-          });
+          if (data.notfound) {
+            toast.error("No dataset found");
+          } else {
+            toast.success("Audio query completed!", {
+              duration: 30000,
+              description: `Time taken: ${data.time}`,
+            });
+          }
         } else {
           throw new Error("Failed to find similar audio");
         }

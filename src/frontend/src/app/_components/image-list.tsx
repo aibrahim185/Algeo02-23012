@@ -17,6 +17,7 @@ import { Input } from "./ui/input";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "./ui/dialog";
 import MidiPlayerComponent from "./midi-player";
 import { Search } from "lucide-react";
+import { toast } from "sonner";
 
 interface DataItem {
   id: string;
@@ -78,6 +79,52 @@ export default function MediaList() {
     setPage(jumpPage);
   };
 
+  const handleRefresh = () => {
+    const fetchTimeCache = async () => {
+      try {
+        const res = await fetch("api/get_time_cache", {
+          method: "GET",
+        });
+        const data = await res.json();
+        if (data) {
+          toast.custom(
+            (t) => (
+              <div className="bg-transparent">
+                <div className="bg-[url('/bg-card.jpeg')] gap-5 border-2 rounded-xl p-4 flex flex-col items-center">
+                  <div className="flex flex-col items-center">
+                    {data.preprocess && <p>Preprocess: {data.preprocess}</p>}
+                    {data.fit && <p>Fit: {data.fit}</p>}
+                    {data.query && <p>Query: {data.query}</p>}
+                    {data.time && <p>Time taken: {data.time}</p>}
+                  </div>
+                  <Button
+                    variant={"ghost"}
+                    onClick={() => toast.dismiss(t)}
+                    className="border-2"
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              </div>
+            ),
+            {
+              duration: Infinity,
+              style: {
+                background: "transparent",
+              },
+            }
+          );
+        } else {
+          toast.error("Failed to fetch cache time");
+        }
+      } catch {
+        toast.error("Error fetching cache time");
+      }
+    };
+
+    fetchTimeCache();
+  };
+
   const renderPageNumbers = () => {
     const visiblePages = 3;
     const pages: number[] = [];
@@ -111,6 +158,7 @@ export default function MediaList() {
             setPage(1);
             setRefreshKey(refreshKey + 1);
             setFetchUrl("get_cache")
+            handleRefresh();
           }}
           className="p-2 bg-transparent"
         >
