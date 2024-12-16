@@ -2,11 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Particles, { initParticlesEngine } from "@tsparticles/react";
+import { type Container } from "@tsparticles/engine";
+import { loadSlim } from "@tsparticles/slim";
 
 export default function Lightning() {
   const [isLightning, setIsLightning] = useState(false);
   const [isBloody, setIsBloody] = useState(false);
   const [isJumpscare, setIsJumpscare] = useState(false);
+
+  const [init, setInit] = useState(false);
 
   useEffect(() => {
     const triggerLightning = () => {
@@ -35,6 +40,25 @@ export default function Lightning() {
 
     return () => clearInterval(lightningInterval);
   }, []);
+
+  useEffect(() => {
+    initParticlesEngine(async (engine) => {
+      // you can initiate the tsParticles instance (engine) here, adding custom shapes or presets
+      // this loads the tsparticles package bundle, it's the easiest method for getting everything ready
+      // starting from v2 you can add only the features you need reducing the bundle size
+      //await loadAll(engine);
+      //await loadFull(engine);
+      await loadSlim(engine);
+      //await loadBasic(engine);
+    }).then(() => {
+      setInit(true);
+    });
+  }, []);
+
+  const particlesLoaded = async (container?: Container): Promise<void> => {
+    console.log(container);
+  };
+
   return (
     <div
       className={`size-full inset-0 absolute -z-50 ${
@@ -51,6 +75,38 @@ export default function Lightning() {
           height={200}
           alt="jumpscare"
           className="w-1/2 h-full inset-0 absolute animate-pulse"
+        />
+      )}
+      {init && (
+        <Particles
+          particlesLoaded={particlesLoaded}
+          options={{
+            particles: {
+              number: {
+                value: 100,
+                density: {
+                  enable: true,
+                },
+              },
+              shape: {
+                type: "circle",
+              },
+              opacity: {
+                value: 0.5,
+              },
+              size: {
+                value: 3,
+              },
+              move: {
+                enable: true,
+                speed: 1,
+                direction: "none",
+                random: true,
+                straight: false,
+              },
+            },
+            retina_detect: true,
+          }}
         />
       )}
     </div>

@@ -8,6 +8,7 @@ import { Input } from "./ui/input";
 import { toast } from "sonner";
 import MidiPlayerComponent from "./midi-player";
 import { useDataContext } from "../_context/DataContext";
+import axios from "axios";
 
 export default function Menu() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -35,33 +36,29 @@ export default function Menu() {
         formData.append("file_uploads", file);
       });
 
-      try {
-        const endPoint = "api/uploaddata";
-        const res = await fetch(endPoint, {
-          method: "POST",
-          body: formData,
-        });
-
-        if (res.ok) {
-          console.log("aman");
-          toast("File Submitted Successfully!");
+      const endPoint = "api/uploaddata";
+      await axios
+        .post(endPoint, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          timeout: 30 * 60 * 1000, // 30 minutes
+        })
+        .then(() => {
+          toast.success("File Submitted Successfully!");
 
           setImageFilePath("/placeholder.png");
           setTitle("Ambalabu");
           setRefreshKey(refreshKey + 1);
           setFetchUrl("get_uploads");
-        } else {
-          console.log("ga aman");
-          toast("Something Went Wrong!", {
-            description: "Please try again later",
-          });
-        }
-      } catch {
-        console.log("ga aman 2");
-        toast("Something Went Wrong!", {
-          description: "Please try again later",
+        })
+        .catch((error) => {
+          if (error.code === "ECONNABORTED") {
+            toast.error("Upload timed out");
+          } else {
+            toast.error("Upload failed", error);
+          }
         });
-      }
     }
   };
 
