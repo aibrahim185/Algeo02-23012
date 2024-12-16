@@ -2,6 +2,11 @@
 
 ## Getting Started
 
+### Prerequisite
+
+- Bun
+- Python
+
 ### Setup Backend
 
 Create and activate a virtual environment:
@@ -22,11 +27,49 @@ python -m venv venv
 .\venv\Scripts\activate
 ```
 
+### How to start
+
+- Build
+
+```bash
+cd src/frontend/
+bun build
+cd ../backend
+bun build
+```
+
+- Start
+
+```bash
+cd src/frontend/
+bun start
+cd ../backend
+bun start
+```
+
 ### Run the development server(python dependencies will be installed automatically here):
+
+- simple methode
 
 ```bash
 cd src/frontend/
 bun dev
+```
+
+- alternative (recommended)
+
+1. Terminal A
+
+```bash
+cd src/frontend/
+bun dev
+```
+
+2. Terminal B
+
+```bash
+cd src/backend/
+bun dev:frontend
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
