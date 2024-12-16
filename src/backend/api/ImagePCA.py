@@ -24,8 +24,8 @@ class ImagePCA:
     path = "data/Cover_Art"
     query_path = "query/hind.jpg"
 
-    width = 200
-    height = 200
+    width = 100
+    height = 100
     prep_images, mean_array = ImagePCA.loadAndPreprocessData(path, width, height)
 
     pca = ImagePCA()

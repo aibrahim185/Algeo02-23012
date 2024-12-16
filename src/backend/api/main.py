@@ -177,8 +177,8 @@ async def find_similar_images(query_image: UploadFile, k: int = Query(10, gt=0))
         f.write(content)
     
     image_dir = os.path.join(UPLOAD_DIR, "images")
-    width = 200
-    height = 200
+    width = 100
+    height = 100
     
     # Load and preprocess images for PCA
     preprocess_start = time.time()
