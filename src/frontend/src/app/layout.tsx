@@ -10,17 +10,17 @@ export const metadata: Metadata = {
 };
 
 const deadfall = localfont({
-  src: "../../public/fonts/Deadfall-Regular.ttf",
+  src: "./fonts/Deadfall-Regular.ttf",
   variable: "--deadfall",
 });
 
 const was = localfont({
-  src: "../../public/fonts/who-asks-satan.ttf",
+  src: "./fonts/who-asks-satan.ttf",
   variable: "--was",
 });
 
 const bloody = localfont({
-  src: "../../public/fonts/BLOODY.ttf",
+  src: "./fonts/BLOODY.ttf",
   variable: "--bloody",
 });
 
